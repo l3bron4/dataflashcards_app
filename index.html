@@ -13,10 +13,8 @@
             getFirestore, collection, addDoc, serverTimestamp, 
             query, where, getDocs 
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        // Import pour les confettis
         import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
-        // --- CONFIGURATION FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyC80dJTJ-tzpkH7FTeZgi9RksyVaiUGq9M",
             authDomain: "dataflashcards.firebaseapp.com",
@@ -32,18 +30,16 @@
 
         // --- DATASET ---
         const rawCards = [
-            { cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC(ma_date , YEAR)." },
-            { cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '' est une valeur existante mais vide." },
-            { cat: "dbt", recto: "À quoi sert la commande dbt seed ?", verso: "À charger des fichiers CSV statiques dans la base de données." },
+            { cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date)." },
+            { cat: "SQL", recto: "Quelle clause pour filtrer après un GROUP BY ?", verso: "La clause HAVING." },
+            { cat: "dbt", recto: "À quoi sert la commande dbt seed ?", verso: "À charger des fichiers CSV statiques." },
             { cat: "Analytics Method", recto: "Qu'est-ce que le framework AARRR ?", verso: "Acquisition, Activation, Retention, Referral, Revenue." },
-            { cat: "Data Platform", recto: "Rôle d'un Data Warehouse ?", verso: "Stocker des données structurées pour l'analyse et le reporting." },
-            { cat: "Business", recto: "Définition d'un KPI ?", verso: "Key Performance Indicator : mesure chiffrée d'un objectif." }
-            // Ajoute tes 150+ questions ici...
+            { cat: "Data Platform", recto: "Rôle d'un Data Warehouse ?", verso: "Stocker des données structurées." },
+            { cat: "Business", recto: "Définition d'un KPI ?", verso: "Key Performance Indicator." }
         ];
 
         const allCards = rawCards.map((card, index) => ({ ...card, id: `q_${index}` }));
 
-        // --- VARIABLES D'ÉTAT ---
         let userPseudo = "";
         let userWeights = {}; 
         let questions = [];  
@@ -51,13 +47,13 @@
         let progressChart = null;
         let currentCategory = 'Tous';
 
-        // --- DÉMARRAGE ---
+        // --- DEMARRAGE & SYNC ---
         window.startSession = async () => {
             const input = document.getElementById('pseudo-input').value;
             if (input.trim().length < 2) return alert("Veuillez entrer un pseudo valide.");
             
             userPseudo = input.trim();
-            allCards.forEach(card => userWeights[card.id] = 3); // 3 = Nouveau
+            allCards.forEach(card => userWeights[card.id] = 3); 
 
             try {
                 const q = query(collection(db, "analytics_promo"), where("pseudo", "==", userPseudo));
@@ -65,24 +61,23 @@
                 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    // 1 = maîtrisé, 3.1 = à revoir (poids fort)
                     userWeights[data.questionId] = (data.resultat === "réussi") ? 1 : 3.1;
                 });
 
                 document.getElementById('welcome-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
                 
+                // On initialise le graphique AVANT de filtrer pour qu'il soit prêt à recevoir les datas
                 initChart();
                 filterCards('Tous'); 
 
             } catch (error) {
-                console.error("Erreur Sync:", error);
+                console.error(error);
                 initChart();
                 filterCards('Tous');
             }
         };
 
-        // --- TIRAGE ET FILTRAGE ---
         window.filterCards = (category) => {
             currentCategory = category;
             currentIndex = 0;
@@ -102,15 +97,13 @@
                 for (let i = 0; i < loop; i++) weightedPool.push(card);
             });
 
-            questions = [...new Set(shuffleArray(weightedPool))];
+            questions = shuffleArray([...new Set(weightedPool)]);
             updateUI();
         };
 
-        // --- RÉPONSE ---
         window.markAs = async (known) => {
             if (questions.length === 0) return;
             const card = questions[currentIndex];
-            
             userWeights[card.id] = known ? 1 : 3.1;
 
             try {
@@ -125,53 +118,55 @@
 
             updateUI();
 
-            // Check Victoire
+            // Verification de la maitrise totale de la catégorie en cours
             const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
             const mastered = scope.filter(c => userWeights[c.id] === 1).length;
+            
             if (mastered === scope.length && scope.length > 0) {
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                document.getElementById('victory-note').classList.remove('hidden');
             }
             
             setTimeout(nextCard, 400);
         };
 
-        // --- MISE À JOUR UI ---
         function updateUI() {
             if (questions.length === 0) return;
             const card = questions[currentIndex];
             
+            // Textes de la carte
             document.getElementById('card-category').innerText = card.cat;
             document.getElementById('card-recto').innerText = card.recto;
             document.getElementById('card-verso').innerText = card.verso;
             document.getElementById('card-counter').innerText = `${currentIndex + 1} / ${questions.length}`;
             document.getElementById('flashcard').classList.remove('card-flipped');
 
-            // Badge de statut
+            // LIBELLÉ DE SUIVI (Nouveau, Maîtrisé, À revoir)
             const badge = document.getElementById('card-status');
             const weight = userWeights[card.id];
             if (weight === 1) {
-                badge.innerText = "● Maîtrisé";
-                badge.className = "text-[10px] font-bold text-teal-500 uppercase tracking-widest mb-2";
+                badge.innerText = "● MAÎTRISÉ";
+                badge.className = "text-[10px] font-black text-teal-500 tracking-[0.2em] mb-4 block";
             } else if (weight === 3.1) {
-                badge.innerText = "● À revoir";
-                badge.className = "text-[10px] font-bold text-pink-500 uppercase tracking-widest mb-2";
+                badge.innerText = "● À REVOIR";
+                badge.className = "text-[10px] font-black text-pink-500 tracking-[0.2em] mb-4 block";
             } else {
-                badge.innerText = "● Nouveau";
-                badge.className = "text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2";
+                badge.innerText = "● NOUVELLE QUESTION";
+                badge.className = "text-[10px] font-black text-indigo-400 tracking-[0.2em] mb-4 block";
             }
 
-            // Données du graphique (filtrées par catégorie active)
+            // MISE À JOUR JAUGE (Dynamique selon la catégorie choisie)
             const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
             const total = scope.length;
-            const maîtrisé = scope.filter(c => userWeights[c.id] === 1).length;
-            const àRevoir = scope.filter(c => userWeights[c.id] === 3.1).length;
-            const jamaisVu = total - (maîtrisé + àRevoir);
+            const masteredCount = scope.filter(c => userWeights[c.id] === 1).length;
+            const reviewCount = scope.filter(c => userWeights[c.id] === 3.1).length;
+            const newCount = total - (masteredCount + reviewCount);
 
-            document.getElementById('progress-text').innerText = `${maîtrisé + àRevoir} / ${total}`;
+            document.getElementById('progress-text').innerText = `${masteredCount} / ${total}`;
 
             if (progressChart) {
-                progressChart.data.datasets[0].data = [maîtrisé, àRevoir, jamaisVu];
-                progressChart.update('none');
+                progressChart.data.datasets[0].data = [masteredCount, reviewCount, newCount];
+                progressChart.update();
             }
         }
 
@@ -189,4 +184,119 @@
 
         function initChart() {
             const ctx = document.getElementById('progressChart').getContext('2d');
-            progressChart = new Chart(ctx,
+            if (progressChart) progressChart.destroy();
+            progressChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ["Maîtrisé", "À revoir", "Nouveau"],
+                    datasets: [{
+                        data: [0, 0, 100],
+                        backgroundColor: ['#14b8a6', '#ec4899', '#f1f5f9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    cutout: '80%', 
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 1000 } 
+                }
+            });
+        }
+
+        // Keybindings
+        document.addEventListener('keydown', (e) => {
+            if(!document.getElementById('welcome-screen').classList.contains('hidden')) return;
+            if(e.code === 'Space') { e.preventDefault(); flipCard(); }
+            if(e.code === 'ArrowRight') nextCard();
+            if(e.code === 'ArrowLeft') prevCard();
+        });
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .perspective { perspective: 1500px; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
+        .card-flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 2.5rem; border-radius: 2.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05); }
+        .card-back { transform: rotateY(180deg); }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 min-h-screen flex items-center justify-center">
+
+    <div id="welcome-screen" class="bg-white p-10 rounded-[3rem] shadow-xl text-center max-w-md w-full mx-4 border border-slate-100">
+        <div class="mb-6 text-5xl animate-bounce">📊</div>
+        <h1 class="text-3xl font-black text-indigo-600 mb-2">Data Mastery</h1>
+        <p class="text-slate-400 mb-8 font-medium">Entrez votre pseudo pour charger votre progression.</p>
+        <input id="pseudo-input" type="text" placeholder="Ton Pseudo" 
+            class="w-full p-4 border-2 border-slate-100 rounded-2xl mb-6 text-center text-lg font-bold outline-none focus:border-indigo-500 transition-all">
+        <button onclick="startSession()" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold text-xl hover:bg-indigo-700 shadow-lg transition-all active:scale-95">
+            C'est parti !
+        </button>
+    </div>
+
+    <div id="app-content" class="hidden w-full max-w-6xl mx-auto px-4 py-8">
+        <header class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div class="lg:col-span-2 bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between">
+                <div>
+                    <h1 class="text-4xl font-extrabold tracking-tight text-indigo-600 mb-2">Data Mastery <span class="text-slate-200">/</span> 150+</h1>
+                    <p class="text-slate-500 font-medium text-lg">L'encyclopédie interactive de la Promo.</p>
+                </div>
+                <div class="mt-8 flex flex-wrap gap-2">
+                    <button onclick="filterCards('Tous')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Tous</button>
+                    <button onclick="filterCards('SQL')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">SQL</button>
+                    <button onclick="filterCards('Analytics Method')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Analytics Method</button>
+                    <button onclick="filterCards('dbt')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">dbt</button>
+                    <button onclick="filterCards('Data Platform')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Data Platform</button>
+                    <button onclick="filterCards('Business')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Business</button>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+                <div class="relative h-32 w-32">
+                    <canvas id="progressChart"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="progress-text" class="text-xl font-black text-slate-800">0 / 0</span>
+                    </div>
+                </div>
+                <p class="mt-4 text-slate-400 text-[10px] uppercase font-bold tracking-widest text-center">Questions Maîtrisées</p>
+            </div>
+        </header>
+
+        <main class="flex flex-col items-center space-y-8">
+            <div id="victory-note" class="hidden bg-teal-100 text-teal-700 px-6 py-3 rounded-full font-bold text-sm animate-pulse">
+                🏆 Catégorie complétée ! Changez de pseudo pour reset.
+            </div>
+
+            <div class="perspective w-full max-w-3xl h-[400px]">
+                <div id="flashcard" class="card-inner" onclick="flipCard()">
+                    <div class="card-front bg-white border border-slate-100">
+                        <div class="text-center w-full">
+                            <span id="card-status"></span> <span id="card-category" class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-8 block">CATÉGORIE</span>
+                            <h2 id="card-recto" class="text-2xl md:text-3xl font-extrabold text-slate-800 px-4 md:px-12 leading-tight"></h2>
+                            <p class="mt-12 text-slate-300 text-[10px] uppercase font-bold tracking-widest italic">Cliquer pour voir la réponse</p>
+                        </div>
+                    </div>
+                    <div class="card-back bg-gradient-to-br from-indigo-600 to-indigo-800 text-white">
+                        <div id="card-verso" class="text-center text-lg md:text-xl font-medium px-8 py-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 w-full max-w-2xl">
+                <button onclick="markAs(false)" class="bg-white border-2 border-slate-100 text-slate-400 py-6 rounded-[2rem] font-bold hover:text-pink-600 transition-all hover:border-pink-100">✖ À revoir</button>
+                <button onclick="markAs(true)" class="bg-teal-500 text-white py-6 rounded-[2rem] font-bold hover:bg-teal-600 shadow-lg shadow-teal-100 transition-all">✔ Maîtrisé</button>
+            </div>
+
+            <div class="flex justify-between w-full max-w-2xl px-4 text-slate-400 font-bold text-sm">
+                <button onclick="prevCard()" class="hover:text-indigo-600">← Précédente</button>
+                <div id="card-counter" class="font-mono bg-slate-100 px-4 py-1 rounded-full">0 / 0</div>
+                <button onclick="nextCard()" class="hover:text-indigo-600">Suivante →</button>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
