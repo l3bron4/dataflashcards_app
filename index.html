@@ -28,7 +28,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- DATASET ---
         const rawCards = [
             { cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date)." },
             { cat: "SQL", recto: "Quelle clause pour filtrer après un GROUP BY ?", verso: "La clause HAVING." },
@@ -47,7 +46,6 @@
         let progressChart = null;
         let currentCategory = 'Tous';
 
-        // --- DEMARRAGE & SYNC ---
         window.startSession = async () => {
             const input = document.getElementById('pseudo-input').value;
             if (input.trim().length < 2) return alert("Veuillez entrer un pseudo valide.");
@@ -61,13 +59,14 @@
                 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    userWeights[data.questionId] = (data.resultat === "réussi") ? 1 : 3.1;
+                    if(data.resultat !== "skip") {
+                        userWeights[data.questionId] = (data.resultat === "réussi") ? 1 : 3.1;
+                    }
                 });
 
                 document.getElementById('welcome-screen').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
                 
-                // On initialise le graphique AVANT de filtrer pour qu'il soit prêt à recevoir les datas
                 initChart();
                 filterCards('Tous'); 
 
@@ -89,7 +88,6 @@
             });
 
             let baseCards = category === 'Tous' ? [...allCards] : allCards.filter(c => c.cat === category);
-            
             let weightedPool = [];
             baseCards.forEach(card => {
                 const w = userWeights[card.id] || 3;
@@ -101,9 +99,19 @@
             updateUI();
         };
 
+        // FONCTION MAÎTRISÉ / À REVOIR AVEC ANALYTICS AVANCÉS
         window.markAs = async (known) => {
             if (questions.length === 0) return;
             const card = questions[currentIndex];
+            const isFlipped = document.getElementById('flashcard').classList.contains('card-flipped');
+            
+            // 1. Snapshot de l'état avant mise à jour
+            const weight = userWeights[card.id];
+            let libelleAvant = "nouveau";
+            if (weight === 1) libelleAvant = "maîtrisé";
+            if (weight === 3.1) libelleAvant = "à revoir";
+
+            // 2. Mise à jour du poids
             userWeights[card.id] = known ? 1 : 3.1;
 
             try {
@@ -112,13 +120,15 @@
                     questionId: card.id,
                     categorie: card.cat,
                     resultat: known ? "réussi" : "à revoir",
+                    // ANALYTICS :
+                    maitriseInstinctive: (known && !isFlipped), // Vrai si "Maîtrisé" sans avoir retourné
+                    etatAuClic: libelleAvant,                    // Quel était le badge au moment du clic
                     date: serverTimestamp()
                 });
             } catch (e) { console.error(e); }
 
             updateUI();
 
-            // Verification de la maitrise totale de la catégorie en cours
             const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
             const mastered = scope.filter(c => userWeights[c.id] === 1).length;
             
@@ -130,18 +140,34 @@
             setTimeout(nextCard, 400);
         };
 
+        // FONCTION SKIP (POUR TRACKER LES QUESTIONS PASSÉES)
+        window.skipCard = async () => {
+            if (questions.length === 0) return;
+            const card = questions[currentIndex];
+            
+            try {
+                await addDoc(collection(db, "analytics_promo"), {
+                    pseudo: userPseudo,
+                    questionId: card.id,
+                    categorie: card.cat,
+                    resultat: "skip",
+                    date: serverTimestamp()
+                });
+            } catch (e) { console.error(e); }
+
+            nextCard();
+        };
+
         function updateUI() {
             if (questions.length === 0) return;
             const card = questions[currentIndex];
             
-            // Textes de la carte
             document.getElementById('card-category').innerText = card.cat;
             document.getElementById('card-recto').innerText = card.recto;
             document.getElementById('card-verso').innerText = card.verso;
             document.getElementById('card-counter').innerText = `${currentIndex + 1} / ${questions.length}`;
             document.getElementById('flashcard').classList.remove('card-flipped');
 
-            // LIBELLÉ DE SUIVI (Nouveau, Maîtrisé, À revoir)
             const badge = document.getElementById('card-status');
             const weight = userWeights[card.id];
             if (weight === 1) {
@@ -155,7 +181,6 @@
                 badge.className = "text-[10px] font-black text-indigo-400 tracking-[0.2em] mb-4 block";
             }
 
-            // MISE À JOUR JAUGE (Dynamique selon la catégorie choisie)
             const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
             const total = scope.length;
             const masteredCount = scope.filter(c => userWeights[c.id] === 1).length;
@@ -205,13 +230,16 @@
             });
         }
 
-        // Keybindings
         document.addEventListener('keydown', (e) => {
             if(!document.getElementById('welcome-screen').classList.contains('hidden')) return;
             if(e.code === 'Space') { e.preventDefault(); flipCard(); }
             if(e.code === 'ArrowRight') nextCard();
             if(e.code === 'ArrowLeft') prevCard();
+            if(e.code === 'KeyS') skipCard(); // Touche S pour Skipper
         });
+
+        window.markAs = markAs;
+        window.skipCard = skipCard;
     </script>
 
     <style>
@@ -230,7 +258,7 @@
     <div id="welcome-screen" class="bg-white p-10 rounded-[3rem] shadow-xl text-center max-w-md w-full mx-4 border border-slate-100">
         <div class="mb-6 text-5xl animate-bounce">📊</div>
         <h1 class="text-3xl font-black text-indigo-600 mb-2">Data Mastery</h1>
-        <p class="text-slate-400 mb-8 font-medium">Entrez votre pseudo pour charger votre progression.</p>
+        <p class="text-slate-400 mb-8 font-medium">Analyse ta progression en temps réel.</p>
         <input id="pseudo-input" type="text" placeholder="Ton Pseudo" 
             class="w-full p-4 border-2 border-slate-100 rounded-2xl mb-6 text-center text-lg font-bold outline-none focus:border-indigo-500 transition-all">
         <button onclick="startSession()" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold text-xl hover:bg-indigo-700 shadow-lg transition-all active:scale-95">
@@ -242,8 +270,8 @@
         <header class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
             <div class="lg:col-span-2 bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between">
                 <div>
-                    <h1 class="text-4xl font-extrabold tracking-tight text-indigo-600 mb-2">Data Mastery <span class="text-slate-200">/</span> 150+</h1>
-                    <p class="text-slate-500 font-medium text-lg">L'encyclopédie interactive de la Promo.</p>
+                    <h1 class="text-4xl font-extrabold tracking-tight text-indigo-600 mb-2">Analytics Dashboard</h1>
+                    <p class="text-slate-500 font-medium text-lg">Suivi des performances par catégorie.</p>
                 </div>
                 <div class="mt-8 flex flex-wrap gap-2">
                     <button onclick="filterCards('Tous')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Tous</button>
@@ -262,20 +290,21 @@
                         <span id="progress-text" class="text-xl font-black text-slate-800">0 / 0</span>
                     </div>
                 </div>
-                <p class="mt-4 text-slate-400 text-[10px] uppercase font-bold tracking-widest text-center">Questions Maîtrisées</p>
+                <p class="mt-4 text-slate-400 text-[10px] uppercase font-bold tracking-widest text-center">Taux de maîtrise</p>
             </div>
         </header>
 
         <main class="flex flex-col items-center space-y-8">
-            <div id="victory-note" class="hidden bg-teal-100 text-teal-700 px-6 py-3 rounded-full font-bold text-sm animate-pulse">
-                🏆 Catégorie complétée ! Changez de pseudo pour reset.
+            <div id="victory-note" class="hidden bg-teal-100 text-teal-700 px-6 py-3 rounded-full font-bold text-sm">
+                🏆 Maîtrise totale ! Pour reset : changez de pseudo.
             </div>
 
             <div class="perspective w-full max-w-3xl h-[400px]">
                 <div id="flashcard" class="card-inner" onclick="flipCard()">
                     <div class="card-front bg-white border border-slate-100">
                         <div class="text-center w-full">
-                            <span id="card-status"></span> <span id="card-category" class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-8 block">CATÉGORIE</span>
+                            <span id="card-status"></span>
+                            <span id="card-category" class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-8 block">CATÉGORIE</span>
                             <h2 id="card-recto" class="text-2xl md:text-3xl font-extrabold text-slate-800 px-4 md:px-12 leading-tight"></h2>
                             <p class="mt-12 text-slate-300 text-[10px] uppercase font-bold tracking-widest italic">Cliquer pour voir la réponse</p>
                         </div>
@@ -286,14 +315,17 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-6 w-full max-w-2xl">
-                <button onclick="markAs(false)" class="bg-white border-2 border-slate-100 text-slate-400 py-6 rounded-[2rem] font-bold hover:text-pink-600 transition-all hover:border-pink-100">✖ À revoir</button>
-                <button onclick="markAs(true)" class="bg-teal-500 text-white py-6 rounded-[2rem] font-bold hover:bg-teal-600 shadow-lg shadow-teal-100 transition-all">✔ Maîtrisé</button>
+            <div class="flex flex-col items-center w-full max-w-2xl gap-4">
+                <div class="grid grid-cols-2 gap-6 w-full">
+                    <button onclick="markAs(false)" class="bg-white border-2 border-slate-100 text-slate-400 py-6 rounded-[2rem] font-bold hover:text-pink-600 transition-all hover:border-pink-100 shadow-sm">✖ À revoir</button>
+                    <button onclick="markAs(true)" class="bg-teal-500 text-white py-6 rounded-[2rem] font-bold hover:bg-teal-600 shadow-lg shadow-teal-100 transition-all">✔ Maîtrisé</button>
+                </div>
+                <button onclick="skipCard()" class="text-slate-300 hover:text-slate-500 text-xs font-bold uppercase tracking-widest transition-all">⏭ Passer cette question (Skip)</button>
             </div>
 
             <div class="flex justify-between w-full max-w-2xl px-4 text-slate-400 font-bold text-sm">
                 <button onclick="prevCard()" class="hover:text-indigo-600">← Précédente</button>
-                <div id="card-counter" class="font-mono bg-slate-100 px-4 py-1 rounded-full">0 / 0</div>
+                <div id="card-counter" class="font-mono bg-slate-100 px-4 py-1 rounded-full text-indigo-600">0 / 0</div>
                 <button onclick="nextCard()" class="hover:text-indigo-600">Suivante →</button>
             </div>
         </main>
