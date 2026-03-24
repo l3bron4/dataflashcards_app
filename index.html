@@ -9,13 +9,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <script type="module">
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
         getFirestore, collection, addDoc, serverTimestamp, 
         query, where, getDocs 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // --- CONFIGURATION FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyC80dJTJ-tzpkH7FTeZgi9RksyVaiUGq9M",
         authDomain: "dataflashcards.firebaseapp.com",
@@ -29,89 +30,112 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- DATASET ---
+    // --- DATASET BRUT ---
     const rawCards = [
+        // SQL
         { cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC(ma_date , YEAR)." },
         { cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '' est une valeur existante mais vide." },
-        { cat: "Business", recto: "C'est quoi le SEO ?", verso: "L'optimisation d'un site pour apparaître gratuitement dans les premiers résultats Google." }
-        // ... Ajoute toutes tes autres cartes ici
+        { cat: "SQL", recto: "Quelle clause pour filtrer après un GROUP BY ?", verso: "La clause HAVING." },
+        // dbt
+        { cat: "dbt", recto: "À quoi sert la commande dbt seed ?", verso: "À charger des fichiers CSV statiques dans la base de données sous forme de tables." },
+        { cat: "dbt", recto: "Différence entre view et table ?", verso: "La vue est une requête stockée (calculée à chaque appel), la table est stockée physiquement (plus rapide à lire)." },
+        // Business
+        { cat: "Business", recto: "C'est quoi le SEO ?", verso: "L'optimisation d'un site pour apparaître gratuitement dans les premiers résultats Google." },
+        { cat: "Business", recto: "Définition d'un KPI ?", verso: "Key Performance Indicator : une mesure chiffrée pour suivre l'atteinte d'un objectif." }
+        // Ajoute tes 150+ questions ici dans le même format...
     ];
 
-    // Génération des IDs uniques
+    // Génération des IDs uniques pour la synchronisation
     const allCards = rawCards.map((card, index) => ({ ...card, id: `q_${index}` }));
 
+    // --- VARIABLES D'ÉTAT ---
     let userPseudo = "";
-    let questions = []; 
+    let userWeights = {}; // { questionId: poids }
+    let questions = [];   // Pool actuel de questions (mélangé et pondéré)
     let currentIndex = 0;
-    let scores = new Array(allCards.length).fill(null);
     let progressChart = null;
-    let filteredCards = [];
+    let currentCategory = 'Tous';
 
+    // --- DÉMARRAGE DE SESSION ---
     window.startSession = async () => {
         const input = document.getElementById('pseudo-input').value;
         if (input.trim().length < 2) return alert("Veuillez entrer un pseudo valide.");
         
         userPseudo = input.trim();
-        const masteredIds = new Set();
+        
+        // Par défaut, chaque carte a un poids de 3 (priorité haute)
+        allCards.forEach(card => userWeights[card.id] = 3);
 
         try {
+            // Récupération de l'historique dans Firebase
             const q = query(
                 collection(db, "analytics_promo"), 
-                where("pseudo", "==", userPseudo),
-                where("resultat", "==", "réussi")
+                where("pseudo", "==", userPseudo)
             );
 
             const querySnapshot = await getDocs(q);
+            
+            // On traite les résultats pour mettre à jour les poids
+            // Note : on prend le dernier résultat en date pour chaque questionId
             querySnapshot.forEach((doc) => {
-                masteredIds.add(doc.data().questionId);
+                const data = doc.data();
+                userWeights[data.questionId] = (data.resultat === "réussi") ? 1 : 3;
             });
-
-            questions = allCards.filter(card => !masteredIds.has(card.id));
-
-            if (questions.length === 0 && masteredIds.size > 0) {
-                alert("Bravo " + userPseudo + " ! Tu as déjà tout maîtrisé. On recommence !");
-                questions = [...allCards]; 
-            } else if (questions.length === 0) {
-                questions = [...allCards];
-            }
 
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
             
             initChart();
-            filterCards('Tous'); // Initialise filteredCards et l'UI
+            filterCards('Tous');
 
         } catch (error) {
             console.error("Erreur de synchronisation :", error);
-            questions = [...allCards];
+            // Mode dégradé si l'index n'est pas encore prêt
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
+            initChart();
             filterCards('Tous');
         }
     };
 
+    // --- LOGIQUE DE FILTRAGE ET PONDÉRATION ---
     window.filterCards = (category) => {
+        currentCategory = category;
         currentIndex = 0;
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.toggle('bg-indigo-600', btn.innerText === category);
-            btn.classList.toggle('text-white', btn.innerText === category);
-        });
         
-        // On filtre à partir de la liste "questions" (qui exclut déjà les réussites)
-        filteredCards = category === 'Tous' ? [...questions] : questions.filter(c => c.cat === category);
-        shuffleArray(filteredCards);
+        // Mise à jour visuelle des boutons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            const isSelected = btn.innerText === category || (btn.innerText === 'Archi' && category === 'Data Platform');
+            btn.classList.toggle('bg-indigo-600', isSelected);
+            btn.classList.toggle('text-white', isSelected);
+        });
+
+        let baseCards = category === 'Tous' ? [...allCards] : allCards.filter(c => c.cat === category);
+        
+        // Création du pool pondéré
+        let weightedPool = [];
+        baseCards.forEach(card => {
+            const weight = userWeights[card.id] || 3;
+            for (let i = 0; i < weight; i++) {
+                weightedPool.push(card);
+            }
+        });
+
+        // Mélange et dédoublonnage pour garder un ordre aléatoire intelligent
+        const shuffled = shuffleArray(weightedPool);
+        questions = [...new Set(shuffled)];
+
         updateUI();
     };
 
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
+    // --- ACTIONS UTILISATEUR ---
     window.markAs = async (known) => {
-        const card = filteredCards[currentIndex]; 
+        const card = questions[currentIndex];
+        
+        // Mise à jour locale immédiate du poids
+        userWeights[card.id] = known ? 1 : 3;
+
+        // Sauvegarde Firebase
         try {
             await addDoc(collection(db, "analytics_promo"), {
                 pseudo: userPseudo,
@@ -121,31 +145,60 @@
                 date: serverTimestamp()
             });
         } catch (e) {
-            console.error("Erreur: ", e);
+            console.error("Erreur d'enregistrement Firebase:", e);
         }
+
+        // Mise à jour immédiate du graphique et de l'interface
         updateUI();
+        
+        // Petite pause pour laisser l'utilisateur voir le feedback avant de passer à la suite
         setTimeout(nextCard, 400);
     };
 
+    // --- INTERFACE ---
     function updateUI() {
-        if (filteredCards.length === 0) {
-            document.getElementById('card-recto').innerText = "Plus de cartes dans cette catégorie !";
-            return;
-        }
-        const card = filteredCards[currentIndex];
+        if (questions.length === 0) return;
+        const card = questions[currentIndex];
+        
         document.getElementById('card-category').innerText = card.cat;
         document.getElementById('card-recto').innerText = card.recto;
         document.getElementById('card-verso').innerText = card.verso;
-        document.getElementById('card-counter').innerText = `${currentIndex + 1} / ${filteredCards.length}`;
+        document.getElementById('card-counter').innerText = `${currentIndex + 1} / ${questions.length}`;
         document.getElementById('flashcard').classList.remove('card-flipped');
 
-        // Mise à jour du chart (simplifiée ici)
-        document.getElementById('progress-text').innerText = `${allCards.length - questions.length} / ${allCards.length}`;
+        // Calcul des stats globales pour le graphique
+        const total = allCards.length;
+        const maîtrisé = allCards.filter(c => userWeights[c.id] === 1).length;
+        const restant = total - maîtrisé;
+
+        document.getElementById('progress-text').innerText = `${maîtrisé} / ${total}`;
+
+        if (progressChart) {
+            progressChart.data.datasets[0].data = [maîtrisé, restant];
+            progressChart.update('none'); // Update sans animation pour la réactivité
+        }
     }
 
-    window.nextCard = () => { currentIndex = (currentIndex + 1) % filteredCards.length; updateUI(); };
-    window.prevCard = () => { currentIndex = (currentIndex - 1 + filteredCards.length) % filteredCards.length; updateUI(); };
+    window.nextCard = () => { 
+        currentIndex = (currentIndex + 1) % questions.length; 
+        updateUI(); 
+    };
+    
+    window.prevCard = () => { 
+        currentIndex = (currentIndex - 1 + questions.length) % questions.length; 
+        updateUI(); 
+    };
+
     window.flipCard = () => document.getElementById('flashcard').classList.toggle('card-flipped');
+
+    // --- OUTILS ---
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
 
     function initChart() {
         const ctx = document.getElementById('progressChart').getContext('2d');
@@ -154,15 +207,21 @@
             data: {
                 labels: ["Maîtrisé", "Restant"],
                 datasets: [{
-                    data: [allCards.length - questions.length, questions.length],
+                    data: [0, allCards.length],
                     backgroundColor: ['#14b8a6', '#f1f5f9'],
                     borderWidth: 0
                 }]
             },
-            options: { responsive: true, cutout: '80%', plugins: { legend: { display: false } } }
+            options: { 
+                responsive: true, 
+                cutout: '80%', 
+                plugins: { legend: { display: false } },
+                animation: { duration: 500 }
+            }
         });
     }
 
+    // Raccourcis clavier
     document.addEventListener('keydown', (e) => {
         if(!document.getElementById('welcome-screen').classList.contains('hidden')) return;
         if(e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); flipCard(); }
