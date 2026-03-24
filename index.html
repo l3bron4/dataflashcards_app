@@ -27,16 +27,60 @@
 
         // --- VARIABLES GLOBALES ---
         let userPseudo = "";
-        
-        // --- ÉCRAN D'ACCUEIL ---
-        window.startSession = () => {
+        let questions = []; // contiendra les questions filtrées
+
+        window.startSession = async () => {
             const input = document.getElementById('pseudo-input').value;
             if (input.trim().length < 2) return alert("Veuillez entrer un pseudo valide.");
+            
             userPseudo = input.trim();
-            document.getElementById('welcome-screen').classList.add('hidden');
-            document.getElementById('app-content').classList.remove('hidden');
-            initChart();
-            filterCards('Tous');
+            
+            // Afficher un petit message "Chargement..." si tu as un élément pour ça, 
+            // sinon on attend juste la réponse de Firebase.
+            const masteredIds = new Set();
+
+            try {
+                // 1. On demande à Firebase ce que l'utilisateur a déjà réussi
+                const q = query(
+                    collection(db, "analytics_promo"), 
+                    where("pseudo", "==", userPseudo),
+                    where("resultat", "==", "réussi")
+                );
+
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    masteredIds.add(doc.data().questionId);
+                });
+
+                // 2. On filtre le dataset pour NE PAS montrer ce qui est déjà maîtrisé
+                questions = allCards.filter(card => !masteredIds.has(card.id));
+
+                if (questions.length === 0 && masteredIds.size > 0) {
+                    alert("Bravo " + userPseudo + " ! Tu as déjà tout maîtrisé. On recommence tout !");
+                    questions = [...allCards]; 
+                } else if (questions.length === 0) {
+                    questions = [...allCards]; // Premier passage
+                }
+
+                // 3. On affiche l'interface
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                
+                // On lance tes fonctions habituelles
+                if (typeof initChart === "function") initChart();
+                
+                // On mélange et on affiche la première question
+                questions.sort(() => Math.random() - 0.5);
+                showQuestion(); 
+
+            } catch (error) {
+                console.error("Erreur de synchronisation :", error);
+                // En cas d'erreur (ex: pas d'index), on lance quand même le jeu avec tout
+                questions = [...allCards];
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                showQuestion();
+            }
         };
 
         // --- DATASET ---
@@ -47,6 +91,9 @@
             // ... (Garde bien toute ta liste de cartes ici)
             { cat: "Business", recto: "C'est quoi le SEO ?", verso: "L'optimisation d'un site pour apparaître gratuitement dans les premiers résultats Google." }
         ];
+
+        // Cette ligne ajoute un ID (0, 1, 2...) à chaque carte automatiquement
+        const allCards = rawCards.map((card, index) => ({ ...card, id: `q_${index}` }));
 
         let currentFilter = 'Tous';
         let filteredCards = [];
@@ -75,23 +122,24 @@
         };
 
         window.markAs = async (known) => {
-            const card = filteredCards[currentIndex];
-            const globalIndex = allCards.indexOf(card);
-            scores[globalIndex] = known;
+            // On récupère la carte actuelle (utilise bien le nom de ta variable : filteredCards ou questions)
+            const card = filteredCards[currentIndex]; 
             
             // --- SAUVEGARDE CLOUD (Analytics) ---
             try {
                 await addDoc(collection(db, "analytics_promo"), {
                     pseudo: userPseudo,
-                    card_id: card.recto.substring(0, 30), // Identifiant simplifié
+                    questionId: card.id, // <-- C'est l'ID stable (q_0, q_1...) pour la synchro
                     categorie: card.cat,
-                    resultat: known ? "réussi" : "raté",
+                    resultat: known ? "réussi" : "à revoir", // On harmonise avec le code de sync
                     date: serverTimestamp()
                 });
+                console.log("Enregistré dans Firebase : ", card.id);
             } catch (e) {
                 console.error("Erreur d'enregistrement: ", e);
             }
 
+            // Mise à jour visuelle (garde tes fonctions actuelles)
             updateUI();
             setTimeout(nextCard, 400);
         };
