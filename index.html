@@ -31,165 +31,172 @@
 
         const rawCards = [
             // SQL -
-{ id: "q_1.0", cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC(ma_date , YEAR)." },")
-{ id: "q_1.1", cat: "SQL", recto: "test", verso: "test" },")
-{ id: "q_2.0", cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '_' est une valeur existante mais vide. NULL ne compte pas !" },")
-{ id: "q_3.0", cat: "SQL", recto: "Comment transformer des lignes en colonnes ?", verso: "Via un PIVOT ou des CASE WHEN agrégés." },")
-{ id: "q_4.0", cat: "SQL", recto: "Quel est l'ordre d'exécution réel d'une requête SQL ?", verso: "0, CTE 1. FROM/JOIN/UNNEST, 2. WHERE, 3. GROUP BY, 4. HAVING, 5. WINDOW, 6. SELECT, 7. DISTINCT, 8. ORDER BY, 9. LIMIT." },")
-{ id: "q_5.0", cat: "SQL", recto: "Comment dédoublonner avec une Window Function ?", verso: "Utilise QUALIFY ROW_NUMBER() OVER(PARTITION BY <...> ORDER BY date DESC) = 1." },")
-{ id: "q_6.0", cat: "SQL", recto: "À quoi sert la fonction COALESCE ?", verso: "Elle remplace la première valeur NULL rencontrée par une valeur par défaut choisie." },")
-{ id: "q_7.0", cat: "SQL", recto: "ROW_NUMBER() vs RANK() ?", verso: "ROW_NUMBER() donne un index unique (1,2,3). RANK() donne le même rang en cas d'égalité (1,2,2,4)." },")
-{ id: "q_8.0", cat: "SQL", recto: "À quoi servent LAG() et LEAD() ?", verso: "LAG accède à la ligne précédente, LEAD accède à la ligne suivante dans une partition." },")
-{ id: "q_9.0", cat: "SQL", recto: "ROW_NUMBER() vs RANK() vs DENSE_RANK() ?", verso: "ROW_NUMBER : Numérotation continue (1,2,3). RANK : Sauts en cas d'égalité (1,2,2,4). DENSE_RANK : Pas de saut (1,2,2,3)." },")
-{ id: "q_10.0", cat: "SQL", recto: "À quoi sert la clause QUALIFY ?", verso: "À filtrer le résultat d'une Window Function directement (ex: QUALIFY ROW_NUMBER() = 1), évitant ainsi une sous-requête." },")
-{ id: "q_11.0", cat: "SQL", recto: "Différence entre WHERE et HAVING ?", verso: "WHERE filtre les lignes AVANT l'agrégation. HAVING filtre les groupes APRÈS le GROUP BY." },")
-{ id: "q_12.0", cat: "SQL", recto: "Qu'est-ce que le COALESCE ?", verso: "Une fonction qui retourne la première valeur non nulle d'une liste (ex: COALESCE(tel, email, 'Inconnu'))." },")
-{ id: "q_13.0", cat: "SQL", recto: "À quoi servent LAG() et LEAD() ?", verso: "Ce sont des window functions. LAG accède à la ligne précédente. LEAD accède à la ligne suivante. Vital pour calculer des évolutions (%M-1, MoM, YoY)." },")
-{ id: "q_14.0", cat: "SQL", recto: "Différence entre INNER JOIN et LEFT JOIN ?", verso: "INNER : Garde uniquement les lignes communes dans les deux tables à la clé de jointure. LEFT : Garde tout de la table de gauche, complète avec des lignes communes avec la table de droite (INNER)." },")
-{ id: "q_15.0", cat: "SQL", recto: "Qu'est-ce qu'une CTE (Common Table Expression) ?", verso: "Un bloc de code temporaire défini par WITH, plus lisible qu'une sous-requête imbriquée. Celle-ci s'execute avant la requete final" },")
-{ id: "q_16.0", cat: "SQL", recto: "À quoi sert la fonction CAST() ?", verso: "À modifier le type de donnée d'une colonne (ex: transformer une chaîne string '2023-01-01' en type DATE). Ou un FLOAT en INT CAST(6,0 AS INT64)" },")
-{ id: "q_17.0", cat: "SQL", recto: "Différence entre COUNT(*) et COUNT(colonne) ?", verso: "COUNT(*) compte toutes les lignes. COUNT(colonne) ignore les valeurs NULL de cette colonne." },")
-{ id: "q_18.0", cat: "SQL", recto: "Qu'est-ce qu'un CROSS JOIN ?", verso: "Un produit cartésien : chaque ligne de A est associée à chaque ligne de B. Attention à l'explosion du volume !" },")
-{ id: "q_19.0", cat: "SQL", recto: "À quoi sert la clause PARTITION BY ?", verso: "À définir des groupes de calcul pour une Window Function sans réduire le nombre de lignes (contrairement au GROUP BY)." },")
-{ id: "q_20.0", cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC('year', ma_date)." },")
-{ id: "q_21.0", cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '' est une valeur existante mais vide. Très important pour les calculs !" },")
-{ id: "q_22.0", cat: "SQL", recto: "Comment transformer des lignes en colonnes ?", verso: "Via un PIVOT ou des CASE WHEN agrégés." },")
-{ id: "q_23.0", cat: "SQL", recto: "Quelles fonctions utilisés pour parser (extraire) les valeurs d'un champ JSON ?", verso: "Avant tout UNNEST (proche du FROM) puis suivant le DW les fonctions JSON comme JSON_VALUE() / JSON_EXTRACT_ARRAY() pour BQ." },")
-{ id: "q_24.0", cat: "SQL", recto: "Structure d'un CASE WHEN ?", verso: "CASE WHEN condition THEN result ELSE default END." },")
-{ id: "q_25.0", cat: "SQL", recto: "Pourquoi 'SELECT *' est-il déconseillé en production ?", verso: "Nuit aux performances (volume inutile) et fragilise le pipeline si le schéma de la table source change." },")
-{ id: "q_26.0", cat: "SQL", recto: "À quoi sert la clause DISTINCT ?", verso: "Supprime les doublons du résultat final pour ne garder que les combinaisons de lignes uniques." },")
-{ id: "q_27.0", cat: "SQL", recto: "Différence entre DATE_TRUNC et DATE_DIFF ?", verso: "TRUNC arrondit une date. DIFF calcule l'écart (en jours, mois, ans) entre deux dates distinctes." },")
-{ id: "q_28.0", cat: "SQL", recto: "Quelle est la différence entre les types INT et FLOAT ?", verso: "INT stocke des nombres entiers (ex: 10). FLOAT stocke des nombres à virgule flottante (ex: 10.5)." },")
-{ id: "q_29.0", cat: "SQL", recto: "Comment combiner deux chaînes de caractères en une seule ?", verso: "Utilise la fonction CONCAT(str1, str2) ou l'opérateur de concaténation || selon l'entrepôt." },")
-{ id: "q_30.0", cat: "SQL", recto: "En Regex à quoi correspond le % et le _?", verso: "% est n'importe quelle caractère de longuer 0+ et _ c'est 1 caractères. Exemple mail '%@%.__%'" },")
-{ id: "q_31.0", cat: "SQL", recto: "Comment consulter la structure (DDL) d'une table dans BigQuery ?", verso: "En interrogeant la vue système : SELECT ddl FROM dataset.INFORMATION_SCHEMA.TABLES WHERE table_name = '...';" },")
-{ id: "q_32.0", cat: "SQL", recto: "À quoi sert la fonction COUNT(*) ?", verso: "Compte le nombre total de lignes dans une table ou un groupe, incluant les lignes avec des valeurs NULL." },")
-{ id: "q_33.0", cat: "SQL", recto: "Comment trouver la valeur la plus élevée d'une colonne ?", verso: "Utilise la fonction d'agrégation MAX(nom_colonne)." },")
-{ id: "q_34.0", cat: "SQL", recto: "À quoi sert l'opérateur IN ?", verso: "Filtre les lignes dont la valeur correspond à un élément présent dans une liste spécifiée (ex: IN ('A', 'B')). Une sorte de 'AND'" },")
-{ id: "q_35.0", cat: "SQL", recto: "Pourquoi utilise-t-on le mot-clé AS ?", verso: "Pour créer un alias, renommant temporairement une colonne ou une table pour rendre le code plus lisible." },")
-{ id: "q_36.0", cat: "SQL", recto: "Que fait SELECT * EXCEPT(col_a) ?", verso: "Sélectionne toutes les colonnes de la table à l'exception de celle(s) précisée(s) entre parenthèses." },")
-{ id: "q_37.0", cat: "SQL", recto: "Comment filtrer une plage de valeurs (ex: entre 10 et 20 INCLUS) ?", verso: "Utilise la clause WHERE colonne BETWEEN 10 AND 20." },")
-{ id: "q_38.0", cat: "SQL", recto: "Comment exclure les valeurs manquantes d'un résultat ?", verso: "Utilise la condition WHERE colonne IS NOT NULL." },")
-{ id: "q_39.0", cat: "SQL", recto: "À quoi sert la fonction ROUND() ?", verso: "À arrondir un nombre à un certain nombre de décimales. Exemple : ROUND(prix, 2)." },")
-{ id: "q_40.0", cat: "SQL", recto: "Comment trier les résultats par ordre décroissant ?", verso: "Utilise la clause ORDER BY nom_colonne DESC." },")
-{ id: "q_41.0", cat: "SQL", recto: "Structure de base d'une Window Function ?", verso: "FONCTION() OVER(PARTITION BY col_a ORDER BY col_b)." },")
-{ id: "q_42.0", cat: "SQL", recto: "Comment numéroter les lignes au sein d'un groupe ?", verso: "Utilise ROW_NUMBER() OVER(PARTITION BY groupe ORDER BY date DESC)." },")
-{ id: "q_43.0", cat: "SQL", recto: "Quelle est l'utilité de CURRENT_DATE ?", verso: "Retourne la date actuelle du système lors de l'exécution de la requête. La zone UTC peut être préciser en argument" },")
-{ id: "q_44.0", cat: "SQL", recto: "Différence entre CREATE TABLE et CREATE VIEW ?", verso: "TABLE stocke les données physiquement (coût stockage). VIEW est une requête enregistrée calculée à la demande." },")
-    
+{ id: "q_1.0", cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC(ma_date , YEAR)." },
+{ id: "q_1.1", cat: "SQL", recto: "test", verso: "test" },
+{ id: "q_2.0", cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '_' est une valeur existante mais vide. NULL ne compte pas !" },
+{ id: "q_3.0", cat: "SQL", recto: "Comment transformer des lignes en colonnes ?", verso: "Via un PIVOT ou des CASE WHEN agrégés." },
+{ id: "q_4.0", cat: "SQL", recto: "Quel est l'ordre d'exécution réel d'une requête SQL ?", verso: "0, CTE 1. FROM/JOIN/UNNEST, 2. WHERE, 3. GROUP BY, 4. HAVING, 5. WINDOW, 6. SELECT, 7. DISTINCT, 8. ORDER BY, 9. LIMIT." },
+{ id: "q_5.0", cat: "SQL", recto: "Comment dédoublonner avec une Window Function ?", verso: "Utilise QUALIFY ROW_NUMBER() OVER(PARTITION BY <...> ORDER BY date DESC) = 1." },
+{ id: "q_6.0", cat: "SQL", recto: "À quoi sert la fonction COALESCE ?", verso: "Elle remplace la première valeur NULL rencontrée par une valeur par défaut choisie." },
+{ id: "q_7.0", cat: "SQL", recto: "ROW_NUMBER() vs RANK() ?", verso: "ROW_NUMBER() donne un index unique (1,2,3). RANK() donne le même rang en cas d'égalité (1,2,2,4)." },
+{ id: "q_8.0", cat: "SQL", recto: "À quoi servent LAG() et LEAD() ?", verso: "LAG accède à la ligne précédente, LEAD accède à la ligne suivante dans une partition." },
+{ id: "q_9.0", cat: "SQL", recto: "ROW_NUMBER() vs RANK() vs DENSE_RANK() ?", verso: "ROW_NUMBER : Numérotation continue (1,2,3). RANK : Sauts en cas d'égalité (1,2,2,4). DENSE_RANK : Pas de saut (1,2,2,3)." },
+{ id: "q_10.0", cat: "SQL", recto: "À quoi sert la clause QUALIFY ?", verso: "À filtrer le résultat d'une Window Function directement (ex: QUALIFY ROW_NUMBER() = 1), évitant ainsi une sous-requête." },
+{ id: "q_11.0", cat: "SQL", recto: "Différence entre WHERE et HAVING ?", verso: "WHERE filtre les lignes AVANT l'agrégation. HAVING filtre les groupes APRÈS le GROUP BY." },
+{ id: "q_12.0", cat: "SQL", recto: "Qu'est-ce que le COALESCE ?", verso: "Une fonction qui retourne la première valeur non nulle d'une liste (ex: COALESCE(tel, email, 'Inconnu'))." },
+{ id: "q_13.0", cat: "SQL", recto: "À quoi servent LAG() et LEAD() ?", verso: "Ce sont des window functions. LAG accède à la ligne précédente. LEAD accède à la ligne suivante. Vital pour calculer des évolutions (%M-1, MoM, YoY)." },
+{ id: "q_14.0", cat: "SQL", recto: "Différence entre INNER JOIN et LEFT JOIN ?", verso: "INNER : Garde uniquement les lignes communes dans les deux tables à la clé de jointure. LEFT : Garde tout de la table de gauche, complète avec des lignes communes avec la table de droite (INNER)." },
+{ id: "q_15.0", cat: "SQL", recto: "Qu'est-ce qu'une CTE (Common Table Expression) ?", verso: "Un bloc de code temporaire défini par WITH, plus lisible qu'une sous-requête imbriquée. Celle-ci s'execute avant la requete final" },
+{ id: "q_16.0", cat: "SQL", recto: "À quoi sert la fonction CAST() ?", verso: "À modifier le type de donnée d'une colonne (ex: transformer une chaîne string '2023-01-01' en type DATE). Ou un FLOAT en INT CAST(6,0 AS INT64)" },
+{ id: "q_17.0", cat: "SQL", recto: "Différence entre COUNT(*) et COUNT(colonne) ?", verso: "COUNT(*) compte toutes les lignes. COUNT(colonne) ignore les valeurs NULL de cette colonne." },
+{ id: "q_18.0", cat: "SQL", recto: "Qu'est-ce qu'un CROSS JOIN ?", verso: "Un produit cartésien : chaque ligne de A est associée à chaque ligne de B. Attention à l'explosion du volume !" },
+{ id: "q_19.0", cat: "SQL", recto: "À quoi sert la clause PARTITION BY ?", verso: "À définir des groupes de calcul pour une Window Function sans réduire le nombre de lignes (contrairement au GROUP BY)." },
+{ id: "q_20.0", cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC('year', ma_date)." },
+{ id: "q_21.0", cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '' est une valeur existante mais vide. Très important pour les calculs !" },
+{ id: "q_22.0", cat: "SQL", recto: "Comment transformer des lignes en colonnes ?", verso: "Via un PIVOT ou des CASE WHEN agrégés." },
+{ id: "q_23.0", cat: "SQL", recto: "Quelles fonctions utilisés pour parser (extraire) les valeurs d'un champ JSON ?", verso: "Avant tout UNNEST (proche du FROM) puis suivant le DW les fonctions JSON comme JSON_VALUE() / JSON_EXTRACT_ARRAY() pour BQ." },
+{ id: "q_24.0", cat: "SQL", recto: "Structure d'un CASE WHEN ?", verso: "CASE WHEN condition THEN result ELSE default END." },
+{ id: "q_25.0", cat: "SQL", recto: "Pourquoi 'SELECT *' est-il déconseillé en production ?", verso: "Nuit aux performances (volume inutile) et fragilise le pipeline si le schéma de la table source change." },
+{ id: "q_26.0", cat: "SQL", recto: "À quoi sert la clause DISTINCT ?", verso: "Supprime les doublons du résultat final pour ne garder que les combinaisons de lignes uniques." },
+{ id: "q_27.0", cat: "SQL", recto: "Différence entre DATE_TRUNC et DATE_DIFF ?", verso: "TRUNC arrondit une date. DIFF calcule l'écart (en jours, mois, ans) entre deux dates distinctes." },
+{ id: "q_28.0", cat: "SQL", recto: "Quelle est la différence entre les types INT et FLOAT ?", verso: "INT stocke des nombres entiers (ex: 10). FLOAT stocke des nombres à virgule flottante (ex: 10.5)." },
+{ id: "q_29.0", cat: "SQL", recto: "Comment combiner deux chaînes de caractères en une seule ?", verso: "Utilise la fonction CONCAT(str1, str2) ou l'opérateur de concaténation || selon l'entrepôt." },
+{ id: "q_30.0", cat: "SQL", recto: "En Regex à quoi correspond le % et le _?", verso: "% est n'importe quelle caractère de longuer 0+ et _ c'est 1 caractères. Exemple mail '%@%.__%'" },
+{ id: "q_31.0", cat: "SQL", recto: "Comment consulter la structure (DDL) d'une table dans BigQuery ?", verso: "En interrogeant la vue système : SELECT ddl FROM dataset.INFORMATION_SCHEMA.TABLES WHERE table_name = '...';" },
+{ id: "q_32.0", cat: "SQL", recto: "À quoi sert la fonction COUNT(*) ?", verso: "Compte le nombre total de lignes dans une table ou un groupe, incluant les lignes avec des valeurs NULL." },
+{ id: "q_33.0", cat: "SQL", recto: "Comment trouver la valeur la plus élevée d'une colonne ?", verso: "Utilise la fonction d'agrégation MAX(nom_colonne)." },
+{ id: "q_34.0", cat: "SQL", recto: "À quoi sert l'opérateur IN ?", verso: "Filtre les lignes dont la valeur correspond à un élément présent dans une liste spécifiée (ex: IN ('A', 'B')). Une sorte de 'AND'" },
+{ id: "q_35.0", cat: "SQL", recto: "Pourquoi utilise-t-on le mot-clé AS ?", verso: "Pour créer un alias, renommant temporairement une colonne ou une table pour rendre le code plus lisible." },
+{ id: "q_36.0", cat: "SQL", recto: "Que fait SELECT * EXCEPT(col_a) ?", verso: "Sélectionne toutes les colonnes de la table à l'exception de celle(s) précisée(s) entre parenthèses." },
+{ id: "q_37.0", cat: "SQL", recto: "Comment filtrer une plage de valeurs (ex: entre 10 et 20 INCLUS) ?", verso: "Utilise la clause WHERE colonne BETWEEN 10 AND 20." },
+{ id: "q_38.0", cat: "SQL", recto: "Comment exclure les valeurs manquantes d'un résultat ?", verso: "Utilise la condition WHERE colonne IS NOT NULL." },
+{ id: "q_39.0", cat: "SQL", recto: "À quoi sert la fonction ROUND() ?", verso: "À arrondir un nombre à un certain nombre de décimales. Exemple : ROUND(prix, 2)." },
+{ id: "q_40.0", cat: "SQL", recto: "Comment trier les résultats par ordre décroissant ?", verso: "Utilise la clause ORDER BY nom_colonne DESC." },
+{ id: "q_41.0", cat: "SQL", recto: "Structure de base d'une Window Function ?", verso: "FONCTION() OVER(PARTITION BY col_a ORDER BY col_b)." },
+{ id: "q_42.0", cat: "SQL", recto: "Comment numéroter les lignes au sein d'un groupe ?", verso: "Utilise ROW_NUMBER() OVER(PARTITION BY groupe ORDER BY date DESC)." },
+{ id: "q_43.0", cat: "SQL", recto: "Quelle est l'utilité de CURRENT_DATE ?", verso: "Retourne la date actuelle du système lors de l'exécution de la requête. La zone UTC peut être préciser en argument" },
+{ id: "q_44.0", cat: "SQL", recto: "Différence entre CREATE TABLE et CREATE VIEW ?", verso: "TABLE stocke les données physiquement (coût stockage). VIEW est une requête enregistrée calculée à la demande." },
+
         // Analytics Method -
-{ id: "q_45.0", cat: "Analytics Method", recto: "Quelles sont les 4 étapes du Dashboarding (Temps) ?", verso: "Cadrage (50%), SQL (20%), Visualisation (10%), Vérification (20%)." },")
-{ id: "q_46.0", cat: "Analytics Method", recto: "Quelle est la structure idéale d'un Dashboard ?", verso: "Du GLOBAL (KPIs : souvent en 3/4 metriques chiffrés) vers le DÉTAIL d'abord explicatif (evolution graph, camembert) puis exploratoire (graph avancé et tableaux granulaires) avec les filtres en haut. Petite astuce : sachant qu'on fait évoluer un dash dans le temps, mettre le graph 'choc' assez haut permet de susciter l'attention." },")
-{ id: "q_47.0", cat: "Analytics Method", recto: "Que faire en cas d'écart de chiffres entre services ?", verso: "1. Communiquer avec les métiers pour voir les définitions et aligner si possible (ex: date de commande vs date de facture). 2. Voir si l'ingestion est correcte 3. Voir si le nettoyage et autres transformations sont conformes" },")
-{ id: "q_48.0", cat: "Analytics Method", recto: "Comment structurer un Dashboard ?", verso: "Structure en 'Entonnoir' : 1. KPIs globaux, 2. Tendances temporelles, 3. Détails granulaires." },")
-{ id: "q_49.0", cat: "Analytics Method", recto: "Qu'est-ce que la granularité d'une table ?", verso: "Le niveau de détail d'une ligne (ex: une ligne = un client vs une ligne = une transaction)." },")
-{ id: "q_50.0", cat: "Analytics Method", recto: "Pourquoi faut-il éviter les jointures N-N ?", verso: "Elles créent une 'explosion de lignes' (fan-out) et faussent totalement les agrégations (SUM)." },")
-{ id: "q_51.0", cat: "Analytics Method", recto: "C'est quoi un KPI - S.M.A.R.T. ?", verso: "Spécifique, Mesurable, Atteignable, Réaliste, Temporellement défini." },")
-{ id: "q_52.0", cat: "Analytics Method", recto: "Différence entre Star Schema et Snowflake Schema ?", verso: "Star : Tables de dimensions jointes directement aux faits (simple). Snowflake : Dimensions normalisées (plus complexe)." },")
-{ id: "q_53.0", cat: "Analytics Method", recto: "Pourquoi le cadrage prend-il 50% du temps ?", verso: "Parce qu'il vaut mieux une réponse approximative à la bonne question qu'une réponse parfaite à la mauvaise question." },")
-{ id: "q_54.0", cat: "Analytics Method", recto: "Tips Modélisation Top-Down vs Bottom-Up ?", verso: "Top-Down : Partir des tables brutes et aller vers le business Bottom-Up : Partir de la table finales revé et remonter dans les tables intermédiaires jusqu'au données brutes" },")
-  
+     
+{ id: "q_45.0", cat: "Analytics Method", recto: "Quelles sont les 4 étapes du Dashboarding (Temps) ?", verso: "Cadrage (50%), SQL (20%), Visualisation (10%), Vérification (20%)." },
+{ id: "q_46.0", cat: "Analytics Method", recto: "Quelle est la structure idéale d'un Dashboard ?", verso: "Du GLOBAL (KPIs : souvent en 3/4 metriques chiffrés) vers le DÉTAIL d'abord explicatif (evolution graph, camembert) puis exploratoire (graph avancé et tableaux granulaires) avec les filtres en haut. Petite astuce : sachant qu'on fait évoluer un dash dans le temps, mettre le graph 'choc' assez haut permet de susciter l'attention." },
+{ id: "q_47.0", cat: "Analytics Method", recto: "Que faire en cas d'écart de chiffres entre services ?", verso: "1. Communiquer avec les métiers pour voir les définitions et aligner si possible (ex: date de commande vs date de facture). 2. Voir si l'ingestion est correcte 3. Voir si le nettoyage et autres transformations sont conformes" },
+{ id: "q_48.0", cat: "Analytics Method", recto: "Comment structurer un Dashboard ?", verso: "Structure en 'Entonnoir' : 1. KPIs globaux, 2. Tendances temporelles, 3. Détails granulaires." },
+{ id: "q_49.0", cat: "Analytics Method", recto: "Qu'est-ce que la granularité d'une table ?", verso: "Le niveau de détail d'une ligne (ex: une ligne = un client vs une ligne = une transaction)." },
+{ id: "q_50.0", cat: "Analytics Method", recto: "Pourquoi faut-il éviter les jointures N-N ?", verso: "Elles créent une 'explosion de lignes' (fan-out) et faussent totalement les agrégations (SUM)." },
+{ id: "q_51.0", cat: "Analytics Method", recto: "C'est quoi un KPI - S.M.A.R.T. ?", verso: "Spécifique, Mesurable, Atteignable, Réaliste, Temporellement défini." },
+{ id: "q_52.0", cat: "Analytics Method", recto: "Différence entre Star Schema et Snowflake Schema ?", verso: "Star : Tables de dimensions jointes directement aux faits (simple). Snowflake : Dimensions normalisées (plus complexe)." },
+{ id: "q_53.0", cat: "Analytics Method", recto: "Pourquoi le cadrage prend-il 50% du temps ?", verso: "Parce qu'il vaut mieux une réponse approximative à la bonne question qu'une réponse parfaite à la mauvaise question." },
+{ id: "q_54.0", cat: "Analytics Method", recto: "Tips Modélisation Top-Down vs Bottom-Up ?", verso: "Top-Down : Partir des tables brutes et aller vers le business Bottom-Up : Partir de la table finales revé et remonter dans les tables intermédiaires jusqu'au données brutes" },
+
+   
         // dbt -
-{ id: "q_55.0", cat: "dbt", recto: "À quoi sert la fonction {{ ref() }} ?", verso: "1. Crée la dépendance dans le DAG. 2. Gère la portabilité (bascule entre dev et prod)." },")
-{ id: "q_56.0", cat: "dbt", recto: "Quelle est la différence entre ref() et source() ?", verso: "ref() pointe vers un modèle dbt. source() pointe vers une table brute externe définie dans un fichier nommé source.yml en YAML." },")
-{ id: "q_57.0", cat: "dbt", recto: "Qu'est-ce que le DAG ?", verso: "Directed Acyclic Graph. C'est le graphe qui ordonne l'exécution de tes modèles sans boucles infinies." },")
-{ id: "q_58.0", cat: "dbt", recto: "À quoi servent les SEEDS ?", verso: "À charger des fichiers CSV statiques (ex: codes pays) directement en tables dans l'entrepôt." },")
-{ id: "q_59.0", cat: "dbt", recto: "Différence entre matérialisation TABLE et VIEW ?", verso: "TABLE : Stockée physiquement (rapide en BI). VIEW : Calculée à la volée (données fraîches, mais plus lent)." },")
-{ id: "q_60.0", cat: "dbt", recto: "Qu'est-ce qu'un modèle INCREMENTAL ?", verso: "Un modèle qui n'ajoute que les nouvelles données depuis le dernier build. Vital pour les gros volumes." },")
-{ id: "q_61.0", cat: "dbt", recto: "À quoi sert la matérialisation EPHEMERAL ?", verso: "À créer une CTE réutilisable qui n'existe pas physiquement en base. Idéal pour de la logique intermédiaire cachée." },")
-{ id: "q_62.0", cat: "dbt", recto: "Comment définir une clé primaire unique dans dbt ?", verso: "Via un test 'unique' dans le fichier schema.yml ou via une clé surrogate (hachage)." },")
-{ id: "q_63.0", cat: "dbt", recto: "Qu'est-ce qu'un SNAPSHOT ?", verso: "Un outil pour historiser les changements (SCD Type 2) sur une table source (ex: suivi du statut d'une commande)." },")
-{ id: "q_64.0", cat: "dbt", recto: "À quoi sert le dossier macros/ ?", verso: "À stocker des fonctions Jinja réutilisables pour automatiser le SQL." },")
-{ id: "q_65.0", cat: "dbt", recto: "Comment installer un package externe (ex: dbt_utils) ?", verso: "1. Lister dans packages.yml. 2. Lancer la commande 'dbt deps'." },")
-{ id: "q_66.0", cat: "dbt", recto: "Différence entre 'dbt run' et 'dbt build' ?", verso: "run : exécute seulement les modèles. build : exécute les modèles + les tests + les snapshots + les seeds." },")
-{ id: "q_67.0", cat: "dbt", recto: "Qu'est-ce que le fichier manifest.json ?", verso: "Le fichier produit par dbt qui contient toute l'architecture et l'état de ton projet." },")
-{ id: "q_68.0", cat: "dbt", recto: "Comment tester la fraîcheur d'une source ?", verso: "Via la configuration 'freshness' dans le YAML de la source (warn_after / error_after)." },")
-{ id: "q_69.0", cat: "dbt", recto: "À quoi sert le 'target' dans dbt ?", verso: "À définir l'environnement de destination (dev, prod, qa) via le fichier profiles.yml." },")
-{ id: "q_70.0", cat: "dbt", recto: "Quelles sont les 4 couches classiques d'un projet dbt ?", verso: "1. Sources (Brut), 2. Staging (Nettoyage), 3. Intermediate (Logique complexe), 4. Marts (Business)." },")
-{ id: "q_71.0", cat: "dbt", recto: "Quelle est la différence entre ref() et source() ?", verso: "Ref() lie deux modèles dbt (crée le DAG). Source() lie dbt à une table brute externe." },")
-{ id: "q_72.0", cat: "dbt", recto: "À quoi sert le tiret dans {%- ou -%}?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL compilé." },")
-{ id: "q_73.0", cat: "dbt", recto: "Qu'est-ce qu'un modèle 'Ephemeral' ?", verso: "Un modèle qui n'existe pas en base mais s'insère comme une CTE dans les modèles suivants." },")
-{ id: "q_74.0", cat: "dbt", recto: "Qu'est-ce que le 'Source Freshness' ?", verso: "Un test qui vérifie si les données sources ont été mises à jour récemment (ex: < 24h)." },")
-{ id: "q_75.0", cat: "dbt", recto: "Quels sont les 4 tests génériques de dbt ?", verso: "Unique, Not_null, Accepted_values, Relationships." },")
-{ id: "q_76.0", cat: "dbt", recto: "À quoi sert le tiret dans {%- ou -%} ?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL compilé." },")
-{ id: "q_77.0", cat: "dbt", recto: "Quelle commande lance les tests de fraîcheur ?", verso: "dbt source freshness." },")
-{ id: "q_78.0", cat: "dbt", recto: "À quoi sert le tiret dans {%- ... -%} ?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL final. Il facile donc la lecture du SQL compilé." },")
-{ id: "q_79.0", cat: "dbt", recto: "Comment créer une variable Jinja locale ?", verso: "Utilise {% set ma_var = 'valeur' %}." },")
-{ id: "q_80.0", cat: "dbt", recto: "Comment appeler une variable globale définie dans dbt_project.yml ?", verso: "Via la fonction {{ var('ma_variable') }}." },")
-{ id: "q_81.0", cat: "dbt", recto: "Qu'est-ce que l'objet 'loop' dans une boucle for Jinja ?", verso: "Un objet contenant des infos sur l'itération (loop.first, loop.last, loop.index)." },")
-{ id: "q_82.0", cat: "dbt", recto: "À quoi sert la fonction is_incremental() ?", verso: "À isoler le code qui ne doit s'exécuter que lors des runs incrémentaux (ex: filtre sur updated_at)." },")
-{ id: "q_83.0", cat: "dbt", recto: "Comment écrire un commentaire visible uniquement par Jinja ?", verso: "Utilise la syntaxe {# mon commentaire #}." },")
-{ id: "q_84.0", cat: "dbt", recto: "Qu'est-ce qu'une 'Surrogate Key' ?", verso: "Une clé unique artificielle créée par hachage (MD5) de plusieurs colonnes. Très utile pour les jointures." },")
-{ id: "q_85.0", cat: "dbt", recto: "Comment documenter un modèle ?", verso: "Via la propriété 'description' dans un fichier .yml ou via des blocs de doc .md externes." },")
-{ id: "q_86.0", cat: "dbt", recto: "À quoi sert 'dbt docs generate' ?", verso: "À scanner ton projet pour créer un site web interactif de documentation et le lignage." },")
-{ id: "q_87.0", cat: "dbt", recto: "Règle d'or du Staging ?", verso: "Une table de staging par table source. Pas de jointures complexes ici, juste du nettoyage technique." },")
-{ id: "q_88.0", cat: "dbt", recto: "Quelle commande permet de ne lancer que les modèles modifiés ?", verso: "dbt run --select state:modified (nécessite un fichier manifest de référence)." },")
-{ id: "q_89.0", cat: "dbt", recto: "Comment itérer sur une liste de colonnes avec une boucle ?", verso: "{% for col in ['id', 'name'] %}\n {{ col }}{% if not loop.last %}, {% endif %}\n{% endfor %}" },")
-{ id: "q_90.0", cat: "dbt", recto: "Comment écrit-on un bloc de contrôle (if, for, set) ?", verso: "Utilise les accolades avec pourcentages : {% if condition %} ... {% endif %} ou {% set x = 1 %}." },")
-  
-        // Data Platform -
-{ id: "q_91.0", cat: "Data Platform", recto: "ETL vs ELT ?", verso: "ETL : Extraction - Transformation - Load : C'est plutôt l'ancien pipeline. ELT : Chargement brut puis transformation dans le DW (plus moderne/dbt), +disponibilité : pas limité par le frein du process ETL en amont, +rentable car moins de cout infrastructure de ETL, +flexibilité car la transformation peut devenir itératif ." },")
-{ id: "q_92.0", cat: "Data Platform", recto: "Qu'est-ce qu'un Data Warehouse ?", verso: "Un entrepôt de données structurées et optimisées pour l'analyse (ex: Snowflake, BigQuery, Redshift)." },")
-{ id: "q_93.0", cat: "Data Platform", recto: "Data Lake vs Data Warehouse ?", verso: "Lake : Stockage brut (fichiers) plutôt pour le ML. D.Warehouse : Stockage structuré (tables SQL)." },")
-{ id: "q_94.0", cat: "Data Platform", recto: "Qu'est-ce que la CI/CD pour la data ?", verso: "Continious Integration /Continious Delivery (FR: déploiement) : L'automatisation des tests et du déploiement à chaque modification du code SQL. Cela vient des bonnes pratiques DevOps en developpement logiciel" },")
-{ id: "q_95.0", cat: "Data Platform", recto: "À quoi sert un Orchestrateur (Airflow, Dagster) ?", verso: "À planifier et surveiller l'exécution des pipelines (Extraction + dbt + BI)." },")
-{ id: "q_96.0", cat: "Data Platform", recto: "Qu'est-ce que le 'Data Lineage' ?", verso: "Le traçage du chemin de la donnée, de sa source brute jusqu'au dashboard final." },")
-{ id: "q_97.0", cat: "Data Platform", recto: "Pourquoi utiliser des schémas différents (Dev/Prod) ?", verso: "Pour permettre aux analystes de tester leurs changements sans casser les rapports officiels." },")
-{ id: "q_98.0", cat: "Data Platform", recto: "Table vs Vue : Quelle est la différence majeure ?", verso: "Table : Stockée physiquement (rapide). Vue : Calculée à chaque appel (fraîche mais plus lente)." },")
-{ id: "q_99.0", cat: "Data Platform", recto: "Pourquoi dénormaliser en fin de pipeline ?", verso: "Pour faciliter la lecture par les outils de BI et accélérer les performances d'affichage. Et C'est plus facile pour les équipes métiers de consulter car il n'y a pas de jointure à faire" },")
-{ id: "q_100.0", cat: "Data Platform", recto: "C'est quoi le  JSON ?", verso: "Format texte léger pour échanger des données. Organisation basée sur des paires 'Clé : Valeur'. Les données sont stockées entre accolades {} pour les objets et crochets [] pour les listes (arrays)." },")
-{ id: "q_101.0", cat: "Data Platform", recto: "C'est quoi un Framework", verso: "Ensemble d'outils et de bibliothèques qui impose une structure de code pour garantir la rapidité, la sécurité et la maintenabilité du développement." },")
-{ id: "q_102.0", cat: "Data Platform", recto: "C'est quoi une API", verso: "Une API (application programming interface) est une interface logicielle qui permet de « connecter » un logiciel ou un service à un autre logiciel ou service afin d'échanger des données et des fonctionnalités.." },")
- 
-        // Business -
-{ id: "q_103.0", cat: "Business", recto: "Qu'est-ce que le 'Churn Rate' ?", verso: "Le taux d'attrition : pourcentage de clients perdus sur une période donnée." },")
-{ id: "q_104.0", cat: "Business", recto: "LTV (Lifetime Value) ?", verso: "Le profit total généré par un client tout au long de sa relation avec l'entreprise." },")
-{ id: "q_105.0", cat: "Business", recto: "CAC (Customer Acquisition Cost) ?", verso: "Le coût total investi pour acquérir un nouveau client." },")
-{ id: "q_106.0", cat: "Business", recto: "Qu'est-ce qu'une analyse de Cohorte ?", verso: "L'étude d'un groupe d'utilisateurs ayant un point commun (ex: date d'inscription) au fil du temps." },")
-{ id: "q_107.0", cat: "Business", recto: "Analyse Top-Down vs Bottom-Up ?", verso: "Top-Down : Partir de l'objectif global. Bottom-Up : Partir du détail pour trouver des opportunités." },")
-{ id: "q_108.0", cat: "Business", recto: "Qu'est-ce que la saisonnalité ?", verso: "Des variations régulières et prévisibles des données liées au calendrier (ex: soldes d'été)." },")
-{ id: "q_109.0", cat: "Business", recto: "Différence entre corrélation et causalité ?", verso: "Corrélation : Deux chiffres bougent ensemble. Causalité : L'un provoque l'autre. Ne jamais confondre !" },")
-{ id: "q_110.0", cat: "Business", recto: "Qu'est-ce que l'A/B Testing ?", verso: "Une expérience où deux variantes sont testées pour déterminer laquelle produit le meilleur résultat." },")
-{ id: "q_111.0", cat: "Business", recto: "Comment expliquer un écart de CA entre Stripe et le Warehouse ?", verso: "Vérifier : 1. Les fuseaux horaires. 2. Les remboursements. 3. Les taxes." },")
-{ id: "q_112.0", cat: "Business", recto: "Un KPI chute. Quelles dimensions vérifier ?", verso: "Interne (bugs, tracking, marketing) et Externe (marché, saisonnalité, concurrents)." },")
-{ id: "q_113.0", cat: "Business", recto: "Qu'est-ce que le 'Conversion Rate' ?", verso: "Nombre de conversions / Nombre total de visiteurs * 100." },")
-{ id: "q_114.0", cat: "Business", recto: "Marketing : Quelle est la différence entre Clic et Impression ?", verso: "Impression : L'annonce est affichée. Clic : L'utilisateur interagit. L'un mesure la vue, l'autre l'engagement." },")
-{ id: "q_115.0", cat: "Business", recto: "Marketing : Qu'est-ce que le CTR (Click-Through Rate) ?", verso: "Formule : (Clics / Impressions) x 100. Mesure l'efficacité et la pertinence d'une annonce." },")
-{ id: "q_116.0", cat: "Business", recto: "Ventes : Différence entre Prospect et Client ?", verso: "Prospect : Acheteur potentiel identifié. Client : Prospect ayant effectué une conversion (achat/sales) concrète." },")
-{ id: "q_117.0", cat: "Business", recto: "Logistique : 'Ready to ship' vs 'Ready to deliver' ?", verso: "Ready to ship : Prêt à quitter l'entrepôt. Ready to deliver : Prêt pour la remise finale (dernier kilomètre)." },")
-{ id: "q_118.0", cat: "Business", recto: "Terminologie : Que signifie KYC ?", verso: "Know Your Customer. Processus de vérification d'identité pour prévenir la fraude et respecter la réglementation." },")
-{ id: "q_119.0", cat: "Business", recto: "Analyse Métier : Quelle est la règle d'or face à un problème ?", verso: "Ne pas coder en SQL immédiatement. Démontrer un raisonnement structuré via un framework d'investigation." },")
-{ id: "q_120.0", cat: "Business", recto: "Framework de pensé : Donnez les 5 axes d'approche structurée ?", verso: "1. Processus (Funnel/Etapes/Chaîne de valeur). 2. Acteurs (Interne/Externe+Liste Métiers). 3. Perspective (A la place du client). 4 Décomposer la métrique. 5. Qualifier ou Affiner (Quoi / Qui / Ou / Quand )" },")
-{ id: "q_121.0", cat: "Business", recto: "Analyse d'Impact : Quelles sont les 3 questions fondamentales ?", verso: "1. Pourquoi est-ce important ? 2. Et alors ? (conséquence). 3. Comment mesurer cet impact ?" },")
-{ id: "q_122.0", cat: "Business", recto: "Qualification : En quoi consiste la méthode 'Qui, Quoi, Où, Quand' ?", verso: "Permet de préciser la question, d'affiner le périmètre (scope) et de qualifier le problème avant l'investigation." },")
-{ id: "q_123.0", cat: "Business", recto: "Ecarts sur les données : Quels sont les 2 piliers de la démarche ?", verso: "1. Communication avec les stakeholders (aligner la definition métier). 2. Technique Data (vérifier le pipeline : ingestion, nettoyage, modélisation)." },")
-{ id: "q_124.0", cat: "Business", recto: "Pourquoi échanger avec l'équipe avant le SQL ?", verso: "Pour comprendre le processus actuel, l'importance du problème (affiner, qualifier, combien ça nous coûte?) et recueillir les hypothèses du terrain." },")
-{ id: "q_125.0", cat: "Business", recto: "Quantifier l'impact : Comment quantifier un problème ?", verso: "En calculant l'ampleur en volume (NB), en pourcentage (%), en délais ou en coût financier direct (combien ça nous coûte?)." },")
-{ id: "q_126.0", cat: "Business", recto: "Questions Ouvertes : 1. le KPI baisse pourquoi ? 2. Quels peuvent être les raisons ?  Quelle est la stratégie pour les résoudre ?", verso: "1. Contexte 'de la boite' 2. Quantifier le pb 3.Découper la question floue en sous-questions précises via des hypothèses mesurables (KPIs). En garder 3 ou 4" },")
-{ id: "q_127.0", cat: "Business", recto: "Contexte : Pourquoi analyser la monétisation ?", verso: "Comprendre comment l'entreprise génère du revenu permet de determiner l'importance business de l'analyse." },")
-{ id: "q_128.0", cat: "Business", recto: "Hypothèses : Donnez les 5 méthodes pour les générer ?", verso: "1. Décomposer métrique. 2. Approche Interne/Externe + Liste metiers. 3. A la place du Client. 4. Analyse du Funnel (étapes). 5. Qualifier ou Affiner (Quoi / Qui / Ou / Quand )" },")
-{ id: "q_129.0", cat: "Business", recto: "KPIs : Quel est leur rôle par rapport aux hypothèses business ?", verso: "Ils servent à confirmer ou infirmer scientifiquement les hypothèses générées lors de la phase de réflexion." },")
-{ id: "q_130.0", cat: "Business", recto: "KPI en baisse : Quels sont les facteurs Internes typiques ?", verso: "Bugs techniques, problèmes de tracking, changements marketing (campagnes) ou modifications de pricing." },")
-{ id: "q_131.0", cat: "Business", recto: "KPI en baisse : Quels sont les facteurs Externes typiques ?", verso: "Saisonnalité, jours fériés, actions de la concurrence ou changements macro-économiques." },")
-{ id: "q_132.0", cat: "Business", recto: "Investigation : Pourquoi utiliser l'approche Funnel/Etapes ?", verso: "Pour identifier à quelle étape précise de la chaîne de valeur se situe le goulot d'étranglement." },")
-{ id: "q_133.0", cat: "Business", recto: "Analyse d'Impact : Pourquoi se demander 'Et alors ?' ?", verso: "Pour forcer l'analyse vers la conséquence business réelle et éviter de rester sur un simple constat technique." },")
-{ id: "q_134.0", cat: "Business", recto: "Question Business : Que faire si des tables/colonnes brutes te sont fournies ?", verso: "Ne pas coder. Organiser et catégoriser les colonnes pour démontrer sa compréhension de la structure des données." },")
-{ id: "q_135.0", cat: "Business", recto: "Inventory KPI", verso: "Opening (stock au début), Closing (stock restant à la fin). Le Turnover Rate mesure combien de fois le stock a été renouvelé sur une période." },")
-{ id: "q_136.0", cat: "Business", recto: "KPI (Option A : Gestion)", verso: "Un indicateur clé de performance qui sert de 'tableau de bord' pour vérifier si l'entreprise avance vers ses objectifs stratégiques." },")
-{ id: "q_137.0", cat: "Business", recto: "OKR vs KPI ?", verso: "Les KPI sont des indicateurs de suivi continus et stables. Les OKR sont des objectifs de rupture, limités dans le temps (souvent au trimestre)." },")
-{ id: "q_138.0", cat: "Business", recto: "Services dans un Parcours client", verso: "Flux linéaire : Marketing (prospect) -> Sales (client) -> Produit (livraison) -> Care (rétention) -> Ops/Finance (fluidité globale)." },")
-{ id: "q_139.0", cat: "Business", recto: "3 Piliers (Option B : Revenus)", verso: "L'acquisition génère le volume de revenus, le produit maximise la valeur par client, et la rétention sécurise la récurrence (LTV)." },")
-{ id: "q_140.0", cat: "Business", recto: "C'est quoi le CTR (Click-Through Rate) ?", verso: "Le taux de clics par rapport au nombre d'affichages (Clics / Impressions)." },")
-{ id: "q_141.0", cat: "Business", recto: "C'est quoi un Clic ?", verso: "L'action d'un utilisateur qui appuie sur un lien ou une publicité." },")
-{ id: "q_142.0", cat: "Business", recto: "C'est quoi une Impression ?", verso: "Le nombre de fois qu'un contenu ou une pub est affiché sur un écran." },")
-{ id: "q_143.0", cat: "Business", recto: "C'est quoi un Prospect ?", verso: "Un contact ou une entreprise identifiée comme un client potentiel." },")
-{ id: "q_144.0", cat: "Business", recto: "C'est quoi le Panier Moyen ?", verso: "Le montant moyen dépensé par les clients lors d'une commande." },")
-{ id: "q_145.0", cat: "Business", recto: "C'est quoi le KYC (Know Your Customer) ?", verso: "Le processus légal de vérification de l'identité d'un client (ex: pour une banque)." },")
-{ id: "q_146.0", cat: "Business", recto: "C'est quoi le NPS (Net Promoter Score) ?", verso: "Un score mesurant la satisfaction client via une seule question : 'Recommanderiez-vous ce service ?'" },")
-{ id: "q_147.0", cat: "Business", recto: "Rétention vs Churn ?", verso: "La rétention est le taux de clients que l'on garde, le churn est le taux de clients que l'on perd." },")
-{ id: "q_148.0", cat: "Business", recto: "C'est quoi la LTV (Life Time Value) ?", verso: "Le profit total généré par un client pendant toute la durée de sa relation avec la boîte." },")
-{ id: "q_149.0", cat: "Business", recto: "C'est quoi le CPA / CAC ?", verso: "Le coût moyen dépensé en marketing pour acquérir un nouveau client." },")
-{ id: "q_150.0", cat: "Business", recto: "C'est quoi le SEO ?", verso: "L'optimisation d'un site pour apparaître gratuitement dans les premiers résultats Google." },")
+        
+{ id: "q_55.0", cat: "dbt", recto: "À quoi sert la fonction {{ ref() }} ?", verso: "1. Crée la dépendance dans le DAG. 2. Gère la portabilité (bascule entre dev et prod)." },
+{ id: "q_56.0", cat: "dbt", recto: "Quelle est la différence entre ref() et source() ?", verso: "ref() pointe vers un modèle dbt. source() pointe vers une table brute externe définie dans un fichier nommé source.yml en YAML." },
+{ id: "q_57.0", cat: "dbt", recto: "Qu'est-ce que le DAG ?", verso: "Directed Acyclic Graph. C'est le graphe qui ordonne l'exécution de tes modèles sans boucles infinies." },
+{ id: "q_58.0", cat: "dbt", recto: "À quoi servent les SEEDS ?", verso: "À charger des fichiers CSV statiques (ex: codes pays) directement en tables dans l'entrepôt." },
+{ id: "q_59.0", cat: "dbt", recto: "Différence entre matérialisation TABLE et VIEW ?", verso: "TABLE : Stockée physiquement (rapide en BI). VIEW : Calculée à la volée (données fraîches, mais plus lent)." },
+{ id: "q_60.0", cat: "dbt", recto: "Qu'est-ce qu'un modèle INCREMENTAL ?", verso: "Un modèle qui n'ajoute que les nouvelles données depuis le dernier build. Vital pour les gros volumes." },
+{ id: "q_61.0", cat: "dbt", recto: "À quoi sert la matérialisation EPHEMERAL ?", verso: "À créer une CTE réutilisable qui n'existe pas physiquement en base. Idéal pour de la logique intermédiaire cachée." },
+{ id: "q_62.0", cat: "dbt", recto: "Comment définir une clé primaire unique dans dbt ?", verso: "Via un test 'unique' dans le fichier schema.yml ou via une clé surrogate (hachage)." },
+{ id: "q_63.0", cat: "dbt", recto: "Qu'est-ce qu'un SNAPSHOT ?", verso: "Un outil pour historiser les changements (SCD Type 2) sur une table source (ex: suivi du statut d'une commande)." },
+{ id: "q_64.0", cat: "dbt", recto: "À quoi sert le dossier macros/ ?", verso: "À stocker des fonctions Jinja réutilisables pour automatiser le SQL." },
+{ id: "q_65.0", cat: "dbt", recto: "Comment installer un package externe (ex: dbt_utils) ?", verso: "1. Lister dans packages.yml. 2. Lancer la commande 'dbt deps'." },
+{ id: "q_66.0", cat: "dbt", recto: "Différence entre 'dbt run' et 'dbt build' ?", verso: "run : exécute seulement les modèles. build : exécute les modèles + les tests + les snapshots + les seeds." },
+{ id: "q_67.0", cat: "dbt", recto: "Qu'est-ce que le fichier manifest.json ?", verso: "Le fichier produit par dbt qui contient toute l'architecture et l'état de ton projet." },
+{ id: "q_68.0", cat: "dbt", recto: "Comment tester la fraîcheur d'une source ?", verso: "Via la configuration 'freshness' dans le YAML de la source (warn_after / error_after)." },
+{ id: "q_69.0", cat: "dbt", recto: "À quoi sert le 'target' dans dbt ?", verso: "À définir l'environnement de destination (dev, prod, qa) via le fichier profiles.yml." },
+{ id: "q_70.0", cat: "dbt", recto: "Quelles sont les 4 couches classiques d'un projet dbt ?", verso: "1. Sources (Brut), 2. Staging (Nettoyage), 3. Intermediate (Logique complexe), 4. Marts (Business)." },
+{ id: "q_71.0", cat: "dbt", recto: "Quelle est la différence entre ref() et source() ?", verso: "Ref() lie deux modèles dbt (crée le DAG). Source() lie dbt à une table brute externe." },
+{ id: "q_72.0", cat: "dbt", recto: "À quoi sert le tiret dans {%- ou -%}?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL compilé." },
+{ id: "q_73.0", cat: "dbt", recto: "Qu'est-ce qu'un modèle 'Ephemeral' ?", verso: "Un modèle qui n'existe pas en base mais s'insère comme une CTE dans les modèles suivants." },
+{ id: "q_74.0", cat: "dbt", recto: "Qu'est-ce que le 'Source Freshness' ?", verso: "Un test qui vérifie si les données sources ont été mises à jour récemment (ex: < 24h)." },
+{ id: "q_75.0", cat: "dbt", recto: "Quels sont les 4 tests génériques de dbt ?", verso: "Unique, Not_null, Accepted_values, Relationships." },
+{ id: "q_76.0", cat: "dbt", recto: "À quoi sert le tiret dans {%- ou -%} ?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL compilé." },
+{ id: "q_77.0", cat: "dbt", recto: "Quelle commande lance les tests de fraîcheur ?", verso: "dbt source freshness." },
+{ id: "q_78.0", cat: "dbt", recto: "À quoi sert le tiret dans {%- ... -%} ?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL final. Il facile donc la lecture du SQL compilé." },
+{ id: "q_79.0", cat: "dbt", recto: "Comment créer une variable Jinja locale ?", verso: "Utilise {% set ma_var = 'valeur' %}." },
+{ id: "q_80.0", cat: "dbt", recto: "Comment appeler une variable globale définie dans dbt_project.yml ?", verso: "Via la fonction {{ var('ma_variable') }}." },
+{ id: "q_81.0", cat: "dbt", recto: "Qu'est-ce que l'objet 'loop' dans une boucle for Jinja ?", verso: "Un objet contenant des infos sur l'itération (loop.first, loop.last, loop.index)." },
+{ id: "q_82.0", cat: "dbt", recto: "À quoi sert la fonction is_incremental() ?", verso: "À isoler le code qui ne doit s'exécuter que lors des runs incrémentaux (ex: filtre sur updated_at)." },
+{ id: "q_83.0", cat: "dbt", recto: "Comment écrire un commentaire visible uniquement par Jinja ?", verso: "Utilise la syntaxe {# mon commentaire #}." },
+{ id: "q_84.0", cat: "dbt", recto: "Qu'est-ce qu'une 'Surrogate Key' ?", verso: "Une clé unique artificielle créée par hachage (MD5) de plusieurs colonnes. Très utile pour les jointures." },
+{ id: "q_85.0", cat: "dbt", recto: "Comment documenter un modèle ?", verso: "Via la propriété 'description' dans un fichier .yml ou via des blocs de doc .md externes." },
+{ id: "q_86.0", cat: "dbt", recto: "À quoi sert 'dbt docs generate' ?", verso: "À scanner ton projet pour créer un site web interactif de documentation et le lignage." },
+{ id: "q_87.0", cat: "dbt", recto: "Règle d'or du Staging ?", verso: "Une table de staging par table source. Pas de jointures complexes ici, juste du nettoyage technique." },
+{ id: "q_88.0", cat: "dbt", recto: "Quelle commande permet de ne lancer que les modèles modifiés ?", verso: "dbt run --select state:modified (nécessite un fichier manifest de référence)." },
+{ id: "q_89.0", cat: "dbt", recto: "Comment itérer sur une liste de colonnes avec une boucle ?", verso: "{% for col in ['id', 'name'] %}\n {{ col }}{% if not loop.last %}, {% endif %}\n{% endfor %}" },
+{ id: "q_90.0", cat: "dbt", recto: "Comment écrit-on un bloc de contrôle (if, for, set) ?", verso: "Utilise les accolades avec pourcentages : {% if condition %} ... {% endif %} ou {% set x = 1 %}." },
+
+          // Data Platform -
+          
+{ id: "q_91.0", cat: "Data Platform", recto: "ETL vs ELT ?", verso: "ETL : Extraction - Transformation - Load : C'est plutôt l'ancien pipeline. ELT : Chargement brut puis transformation dans le DW (plus moderne/dbt), +disponibilité : pas limité par le frein du process ETL en amont, +rentable car moins de cout infrastructure de ETL, +flexibilité car la transformation peut devenir itératif ." },
+{ id: "q_92.0", cat: "Data Platform", recto: "Qu'est-ce qu'un Data Warehouse ?", verso: "Un entrepôt de données structurées et optimisées pour l'analyse (ex: Snowflake, BigQuery, Redshift)." },
+{ id: "q_93.0", cat: "Data Platform", recto: "Data Lake vs Data Warehouse ?", verso: "Lake : Stockage brut (fichiers) plutôt pour le ML. D.Warehouse : Stockage structuré (tables SQL)." },
+{ id: "q_94.0", cat: "Data Platform", recto: "Qu'est-ce que la CI/CD pour la data ?", verso: "Continious Integration /Continious Delivery (FR: déploiement) : L'automatisation des tests et du déploiement à chaque modification du code SQL. Cela vient des bonnes pratiques DevOps en developpement logiciel" },
+{ id: "q_95.0", cat: "Data Platform", recto: "À quoi sert un Orchestrateur (Airflow, Dagster) ?", verso: "À planifier et surveiller l'exécution des pipelines (Extraction + dbt + BI)." },
+{ id: "q_96.0", cat: "Data Platform", recto: "Qu'est-ce que le 'Data Lineage' ?", verso: "Le traçage du chemin de la donnée, de sa source brute jusqu'au dashboard final." },
+{ id: "q_97.0", cat: "Data Platform", recto: "Pourquoi utiliser des schémas différents (Dev/Prod) ?", verso: "Pour permettre aux analystes de tester leurs changements sans casser les rapports officiels." },
+{ id: "q_98.0", cat: "Data Platform", recto: "Table vs Vue : Quelle est la différence majeure ?", verso: "Table : Stockée physiquement (rapide). Vue : Calculée à chaque appel (fraîche mais plus lente)." },
+{ id: "q_99.0", cat: "Data Platform", recto: "Pourquoi dénormaliser en fin de pipeline ?", verso: "Pour faciliter la lecture par les outils de BI et accélérer les performances d'affichage. Et C'est plus facile pour les équipes métiers de consulter car il n'y a pas de jointure à faire" },
+{ id: "q_100.0", cat: "Data Platform", recto: "C'est quoi le  JSON ?", verso: "Format texte léger pour échanger des données. Organisation basée sur des paires 'Clé : Valeur'. Les données sont stockées entre accolades {} pour les objets et crochets [] pour les listes (arrays)." },
+{ id: "q_101.0", cat: "Data Platform", recto: "C'est quoi un Framework", verso: "Ensemble d'outils et de bibliothèques qui impose une structure de code pour garantir la rapidité, la sécurité et la maintenabilité du développement." },
+{ id: "q_102.0", cat: "Data Platform", recto: "C'est quoi une API", verso: "Une API (application programming interface) est une interface logicielle qui permet de « connecter » un logiciel ou un service à un autre logiciel ou service afin d'échanger des données et des fonctionnalités.." },
+
+    
+        // Business -    
+            
+{ id: "q_103.0", cat: "Business", recto: "Qu'est-ce que le 'Churn Rate' ?", verso: "Le taux d'attrition : pourcentage de clients perdus sur une période donnée." },
+{ id: "q_104.0", cat: "Business", recto: "LTV (Lifetime Value) ?", verso: "Le profit total généré par un client tout au long de sa relation avec l'entreprise." },
+{ id: "q_105.0", cat: "Business", recto: "CAC (Customer Acquisition Cost) ?", verso: "Le coût total investi pour acquérir un nouveau client." },
+{ id: "q_106.0", cat: "Business", recto: "Qu'est-ce qu'une analyse de Cohorte ?", verso: "L'étude d'un groupe d'utilisateurs ayant un point commun (ex: date d'inscription) au fil du temps." },
+{ id: "q_107.0", cat: "Business", recto: "Analyse Top-Down vs Bottom-Up ?", verso: "Top-Down : Partir de l'objectif global. Bottom-Up : Partir du détail pour trouver des opportunités." },
+{ id: "q_108.0", cat: "Business", recto: "Qu'est-ce que la saisonnalité ?", verso: "Des variations régulières et prévisibles des données liées au calendrier (ex: soldes d'été)." },
+{ id: "q_109.0", cat: "Business", recto: "Différence entre corrélation et causalité ?", verso: "Corrélation : Deux chiffres bougent ensemble. Causalité : L'un provoque l'autre. Ne jamais confondre !" },
+{ id: "q_110.0", cat: "Business", recto: "Qu'est-ce que l'A/B Testing ?", verso: "Une expérience où deux variantes sont testées pour déterminer laquelle produit le meilleur résultat." },
+{ id: "q_111.0", cat: "Business", recto: "Comment expliquer un écart de CA entre Stripe et le Warehouse ?", verso: "Vérifier : 1. Les fuseaux horaires. 2. Les remboursements. 3. Les taxes." },
+{ id: "q_112.0", cat: "Business", recto: "Un KPI chute. Quelles dimensions vérifier ?", verso: "Interne (bugs, tracking, marketing) et Externe (marché, saisonnalité, concurrents)." },
+{ id: "q_113.0", cat: "Business", recto: "Qu'est-ce que le 'Conversion Rate' ?", verso: "Nombre de conversions / Nombre total de visiteurs * 100." },
+{ id: "q_114.0", cat: "Business", recto: "Marketing : Quelle est la différence entre Clic et Impression ?", verso: "Impression : L'annonce est affichée. Clic : L'utilisateur interagit. L'un mesure la vue, l'autre l'engagement." },
+{ id: "q_115.0", cat: "Business", recto: "Marketing : Qu'est-ce que le CTR (Click-Through Rate) ?", verso: "Formule : (Clics / Impressions) x 100. Mesure l'efficacité et la pertinence d'une annonce." },
+{ id: "q_116.0", cat: "Business", recto: "Ventes : Différence entre Prospect et Client ?", verso: "Prospect : Acheteur potentiel identifié. Client : Prospect ayant effectué une conversion (achat/sales) concrète." },
+{ id: "q_117.0", cat: "Business", recto: "Logistique : 'Ready to ship' vs 'Ready to deliver' ?", verso: "Ready to ship : Prêt à quitter l'entrepôt. Ready to deliver : Prêt pour la remise finale (dernier kilomètre)." },
+{ id: "q_118.0", cat: "Business", recto: "Terminologie : Que signifie KYC ?", verso: "Know Your Customer. Processus de vérification d'identité pour prévenir la fraude et respecter la réglementation." },
+{ id: "q_119.0", cat: "Business", recto: "Analyse Métier : Quelle est la règle d'or face à un problème ?", verso: "Ne pas coder en SQL immédiatement. Démontrer un raisonnement structuré via un framework d'investigation." },
+{ id: "q_120.0", cat: "Business", recto: "Framework de pensé : Donnez les 5 axes d'approche structurée ?", verso: "1. Processus (Funnel/Etapes/Chaîne de valeur). 2. Acteurs (Interne/Externe+Liste Métiers). 3. Perspective (A la place du client). 4 Décomposer la métrique. 5. Qualifier ou Affiner (Quoi / Qui / Ou / Quand )" },
+{ id: "q_121.0", cat: "Business", recto: "Analyse d'Impact : Quelles sont les 3 questions fondamentales ?", verso: "1. Pourquoi est-ce important ? 2. Et alors ? (conséquence). 3. Comment mesurer cet impact ?" },
+{ id: "q_122.0", cat: "Business", recto: "Qualification : En quoi consiste la méthode 'Qui, Quoi, Où, Quand' ?", verso: "Permet de préciser la question, d'affiner le périmètre (scope) et de qualifier le problème avant l'investigation." },
+{ id: "q_123.0", cat: "Business", recto: "Ecarts sur les données : Quels sont les 2 piliers de la démarche ?", verso: "1. Communication avec les stakeholders (aligner la definition métier). 2. Technique Data (vérifier le pipeline : ingestion, nettoyage, modélisation)." },
+{ id: "q_124.0", cat: "Business", recto: "Pourquoi échanger avec l'équipe avant le SQL ?", verso: "Pour comprendre le processus actuel, l'importance du problème (affiner, qualifier, combien ça nous coûte?) et recueillir les hypothèses du terrain." },
+{ id: "q_125.0", cat: "Business", recto: "Quantifier l'impact : Comment quantifier un problème ?", verso: "En calculant l'ampleur en volume (NB), en pourcentage (%), en délais ou en coût financier direct (combien ça nous coûte?)." },
+{ id: "q_126.0", cat: "Business", recto: "Questions Ouvertes : 1. le KPI baisse pourquoi ? 2. Quels peuvent être les raisons ?  Quelle est la stratégie pour les résoudre ?", verso: "1. Contexte 'de la boite' 2. Quantifier le pb 3.Découper la question floue en sous-questions précises via des hypothèses mesurables (KPIs). En garder 3 ou 4" },
+{ id: "q_127.0", cat: "Business", recto: "Contexte : Pourquoi analyser la monétisation ?", verso: "Comprendre comment l'entreprise génère du revenu permet de determiner l'importance business de l'analyse." },
+{ id: "q_128.0", cat: "Business", recto: "Hypothèses : Donnez les 5 méthodes pour les générer ?", verso: "1. Décomposer métrique. 2. Approche Interne/Externe + Liste metiers. 3. A la place du Client. 4. Analyse du Funnel (étapes). 5. Qualifier ou Affiner (Quoi / Qui / Ou / Quand )" },
+{ id: "q_129.0", cat: "Business", recto: "KPIs : Quel est leur rôle par rapport aux hypothèses business ?", verso: "Ils servent à confirmer ou infirmer scientifiquement les hypothèses générées lors de la phase de réflexion." },
+{ id: "q_130.0", cat: "Business", recto: "KPI en baisse : Quels sont les facteurs Internes typiques ?", verso: "Bugs techniques, problèmes de tracking, changements marketing (campagnes) ou modifications de pricing." },
+{ id: "q_131.0", cat: "Business", recto: "KPI en baisse : Quels sont les facteurs Externes typiques ?", verso: "Saisonnalité, jours fériés, actions de la concurrence ou changements macro-économiques." },
+{ id: "q_132.0", cat: "Business", recto: "Investigation : Pourquoi utiliser l'approche Funnel/Etapes ?", verso: "Pour identifier à quelle étape précise de la chaîne de valeur se situe le goulot d'étranglement." },
+{ id: "q_133.0", cat: "Business", recto: "Analyse d'Impact : Pourquoi se demander 'Et alors ?' ?", verso: "Pour forcer l'analyse vers la conséquence business réelle et éviter de rester sur un simple constat technique." },
+{ id: "q_134.0", cat: "Business", recto: "Question Business : Que faire si des tables/colonnes brutes te sont fournies ?", verso: "Ne pas coder. Organiser et catégoriser les colonnes pour démontrer sa compréhension de la structure des données." },
+{ id: "q_135.0", cat: "Business", recto: "Inventory KPI", verso: "Opening (stock au début), Closing (stock restant à la fin). Le Turnover Rate mesure combien de fois le stock a été renouvelé sur une période." },
+{ id: "q_136.0", cat: "Business", recto: "KPI (Option A : Gestion)", verso: "Un indicateur clé de performance qui sert de 'tableau de bord' pour vérifier si l'entreprise avance vers ses objectifs stratégiques." },
+{ id: "q_137.0", cat: "Business", recto: "OKR vs KPI ?", verso: "Les KPI sont des indicateurs de suivi continus et stables. Les OKR sont des objectifs de rupture, limités dans le temps (souvent au trimestre)." },
+{ id: "q_138.0", cat: "Business", recto: "Services dans un Parcours client", verso: "Flux linéaire : Marketing (prospect) -> Sales (client) -> Produit (livraison) -> Care (rétention) -> Ops/Finance (fluidité globale)." },
+{ id: "q_139.0", cat: "Business", recto: "3 Piliers (Option B : Revenus)", verso: "L'acquisition génère le volume de revenus, le produit maximise la valeur par client, et la rétention sécurise la récurrence (LTV)." },
+{ id: "q_140.0", cat: "Business", recto: "C'est quoi le CTR (Click-Through Rate) ?", verso: "Le taux de clics par rapport au nombre d'affichages (Clics / Impressions)." },
+{ id: "q_141.0", cat: "Business", recto: "C'est quoi un Clic ?", verso: "L'action d'un utilisateur qui appuie sur un lien ou une publicité." },
+{ id: "q_142.0", cat: "Business", recto: "C'est quoi une Impression ?", verso: "Le nombre de fois qu'un contenu ou une pub est affiché sur un écran." },
+{ id: "q_143.0", cat: "Business", recto: "C'est quoi un Prospect ?", verso: "Un contact ou une entreprise identifiée comme un client potentiel." },
+{ id: "q_144.0", cat: "Business", recto: "C'est quoi le Panier Moyen ?", verso: "Le montant moyen dépensé par les clients lors d'une commande." },
+{ id: "q_145.0", cat: "Business", recto: "C'est quoi le KYC (Know Your Customer) ?", verso: "Le processus légal de vérification de l'identité d'un client (ex: pour une banque)." },
+{ id: "q_146.0", cat: "Business", recto: "C'est quoi le NPS (Net Promoter Score) ?", verso: "Un score mesurant la satisfaction client via une seule question : 'Recommanderiez-vous ce service ?'" },
+{ id: "q_147.0", cat: "Business", recto: "Rétention vs Churn ?", verso: "La rétention est le taux de clients que l'on garde, le churn est le taux de clients que l'on perd." },
+{ id: "q_148.0", cat: "Business", recto: "C'est quoi la LTV (Life Time Value) ?", verso: "Le profit total généré par un client pendant toute la durée de sa relation avec la boîte." },
+{ id: "q_149.0", cat: "Business", recto: "C'est quoi le CPA / CAC ?", verso: "Le coût moyen dépensé en marketing pour acquérir un nouveau client." },
+{ id: "q_150.0", cat: "Business", recto: "C'est quoi le SEO ?", verso: "L'optimisation d'un site pour apparaître gratuitement dans les premiers résultats Google." },
+            
         ];
 
         const allCards = rawCards;
