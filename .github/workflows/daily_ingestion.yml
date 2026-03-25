@@ -2,29 +2,28 @@ name: Daily Firestore to BigQuery Ingestion
 
 on:
   schedule:
-    # Tourne tous les jours à 03:00 UTC
     - cron: '0 3 * * *'
-  workflow_dispatch: # Bouton pour lancer manuellement dans l'onglet Actions
+  workflow_dispatch: 
 
 jobs:
   run_script:
     runs-on: ubuntu-latest
 
     steps:
+      # Passage en v4 pour éviter le warning Node.js
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      # Passage en v5 pour éviter le warning Node.js
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
-      # Installation des dépendances nécessaires pour Python
       - name: Install dependencies
         run: |
           pip install google-cloud-firestore google-cloud-bigquery pandas db-dtypes
 
-      # Exécution du script avec la clé secrète récupérée dans les Secrets GitHub
       - name: Run Ingestion Script
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
