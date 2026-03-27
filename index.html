@@ -340,20 +340,34 @@
         nextCard();
     };
 
-    function updateUI() {
+function updateUI() {
         if (questions.length === 0) return;
         const card = questions[currentIndex];
-        cardStartTime = Date.now(); // On déclenche le chrono à l'affichage
+        cardStartTime = Date.now(); 
 
         document.getElementById('card-category').innerText = card.cat;
         document.getElementById('card-recto').innerText = card.recto;
-        document.getElementById('card-verso').innerText = card.verso;
         document.getElementById('card-counter').innerText = `${currentIndex + 1} / ${questions.length}`;
         document.getElementById('flashcard').classList.remove('card-flipped');
 
-        // Gestion des badges et graphiques (inchangé)...
+        // --- DEBUT DU BLOC MODIFIÉ POUR LE VERSO ---
+        const versoElem = document.getElementById('card-verso');
+        const textVerso = card.verso;
+        versoElem.innerText = textVerso;
+
+        // Logique d'ajustement automatique de la taille (Auto-Fit)
+        if (textVerso.length > 250) {
+            versoElem.className = "text-center text-sm md:text-base font-medium px-8 py-2 leading-tight";
+        } else if (textVerso.length > 120) {
+            versoElem.className = "text-center text-base md:text-lg font-medium px-8 py-4 leading-snug";
+        } else {
+            versoElem.className = "text-center text-lg md:text-2xl font-bold px-8 py-4";
+        }
+        // --- FIN DU BLOC MODIFIÉ ---
+
         const badge = document.getElementById('card-status');
         const weight = userWeights[card.id];
+        // ... (le reste de ton code pour les badges et le graphique reste identique)
         if (weight === 1) {
             badge.innerText = "● MAÎTRISÉ";
             badge.className = "text-[10px] font-black text-teal-500 tracking-[0.2em] mb-4 block";
@@ -479,8 +493,8 @@
                             <p class="mt-12 text-slate-400 text-[10px] uppercase font-bold tracking-[0.2em]">Cliquer pour voir la réponse <span class="kbd-key uppercase">Espace</span></p>
                         </div>
                     </div>
-                    <div class="card-back bg-gradient-to-br from-indigo-600 to-indigo-800 text-white">
-                        <div id="card-verso" class="text-center text-lg md:text-xl font-medium px-8 py-4"></div>
+                    <div class="card-back bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center overflow-hidden">
+                        <div id="card-verso" class=""></div>
                     </div>
                 </div>
             </div>
