@@ -8,29 +8,39 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { 
-            getFirestore, collection, addDoc, serverTimestamp, 
-            query, where, getDocs 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import confetti from 'https://cdn.skypack.dev/canvas-confetti';
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+        getFirestore, collection, addDoc, serverTimestamp, 
+        query, where, getDocs 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC80dJTJ-tzpkH7FTeZgi9RksyVaiUGq9M",
-            authDomain: "dataflashcards.firebaseapp.com",
-            projectId: "dataflashcards",
-            storageBucket: "dataflashcards.firebasestorage.app",
-            messagingSenderId: "190231819778",
-            appId: "1:190231819778:web:64832f57614b20f6fd591b",
-            measurementId: "G-TG7RX5WLS0"
-        };
+    // --- CONFIGURATION ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyC80dJTJ-tzpkH7FTeZgi9RksyVaiUGq9M",
+        authDomain: "dataflashcards.firebaseapp.com",
+        projectId: "dataflashcards",
+        storageBucket: "dataflashcards.firebasestorage.app",
+        messagingSenderId: "190231819778",
+        appId: "1:190231819778:web:64832f57614b20f6fd591b",
+        measurementId: "G-TG7RX5WLS0"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        const rawCards = [
-            // SQL -
+    // --- GLOBALS ---
+    let userPseudo = "";
+    let userWeights = {}; 
+    let questions = [];  
+    let currentIndex = 0;
+    let progressChart = null;
+    let currentCategory = 'Tous';
+    let cardStartTime = null; // Pour le chrono
+
+    const rawCards = [
+                    // SQL -
 { id: "q_001.1", cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC(ma_date , YEAR)." },
 { id: "q_002.1", cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '_' est une valeur existante mais vide. NULL ne compte pas !" },
 { id: "q_003.1", cat: "SQL", recto: "Comment transformer des lignes en colonnes ?", verso: "Via un PIVOT ou des CASE WHEN agrégés." },
@@ -209,214 +219,197 @@
 { id: "q_137.1", cat: "Business", recto: "C'est quoi la LTV (Life Time Value) ?", verso: "Le profit total généré par un client pendant toute la durée de sa relation avec la boîte." },
 { id: "q_138.1", cat: "Business", recto: "C'est quoi le CPA / CAC ?", verso: "Le coût moyen dépensé en marketing pour acquérir un nouveau client." },
 { id: "q_139.1", cat: "Business", recto: "C'est quoi le SEO ?", verso: "L'optimisation d'un site pour apparaître gratuitement dans les premiers résultats Google." },
-        ];
+    ];
+    const allCards = rawCards;
 
-        const allCards = rawCards;
-
-        let userPseudo = "";
-        let userWeights = {}; 
-        let questions = [];  
-        let currentIndex = 0;
-        let progressChart = null;
-        let currentCategory = 'Tous';
-
-        window.startSession = async () => {
-            const input = document.getElementById('pseudo-input').value;
-            if (input.trim().length < 2) return alert("Veuillez entrer un pseudo valide.");
-            
-            userPseudo = input.trim();
-            allCards.forEach(card => userWeights[card.id] = 3); 
-
-            try {
-                const q = query(collection(db, "analytics_promo"), where("pseudo", "==", userPseudo));
-                const querySnapshot = await getDocs(q);
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if(data.resultat !== "skip") {
-                        userWeights[data.questionId] = (data.resultat === "réussi") ? 1 : 3.1;
-                    }
-                });
-
-                document.getElementById('welcome-screen').classList.add('hidden');
-                document.getElementById('app-content').classList.remove('hidden');
-                
-                initChart();
-                filterCards('Tous'); 
-
-            } catch (error) {
-                console.error(error);
-                initChart();
-                filterCards('Tous');
-            }
-        };
-
-        window.filterCards = (category) => {
-            currentCategory = category;
-            currentIndex = 0;
-            document.getElementById('victory-note').classList.add('hidden'); // Cacher le message lors d'un changement
-            
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                const isSelected = btn.innerText === category;
-                btn.classList.toggle('bg-indigo-600', isSelected);
-                btn.classList.toggle('text-white', isSelected);
-            });
-
-            let baseCards = category === 'Tous' ? [...allCards] : allCards.filter(c => c.cat === category);
-            let weightedPool = [];
-            baseCards.forEach(card => {
-                const w = userWeights[card.id] || 3;
-                const loop = Math.floor(w); 
-                for (let i = 0; i < loop; i++) weightedPool.push(card);
-            });
-
-            questions = shuffleArray([...new Set(weightedPool)]);
-            updateUI();
-        };
-
-        window.markAs = async (known) => {
-            if (questions.length === 0) return;
-            const card = questions[currentIndex];
-            const isFlipped = document.getElementById('flashcard').classList.contains('card-flipped');
-            const weight = userWeights[card.id];
-            let libelleAvant = (weight === 1) ? "maîtrisé" : (weight === 3.1 ? "à revoir" : "nouveau");
-
-            userWeights[card.id] = known ? 1 : 3.1;
-
-            try {
-                await addDoc(collection(db, "analytics_promo"), {
-                    pseudo: userPseudo,
-                    questionId: card.id,
-                    categorie: card.cat,
-                    resultat: known ? "réussi" : "à revoir",
-                    maitriseInstinctive: (known && !isFlipped),
-                    etatAuClic: libelleAvant,
-                    date: serverTimestamp()
-                });
-            } catch (e) { console.error(e); }
-
-            updateUI();
-
-            // LOGIQUE DE VICTOIRE DIFFERENTIÉE
-            const allMastered = allCards.filter(c => userWeights[c.id] === 1).length === allCards.length;
-            const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
-            const categoryMastered = scope.filter(c => userWeights[c.id] === 1).length === scope.length;
-            
-            const victoryNote = document.getElementById('victory-note');
-            
-            if (allMastered) {
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                victoryNote.innerText = "🏆 Maîtrise totale ! Pour reset : changez de pseudo";
-                victoryNote.classList.remove('hidden');
-            } else if (categoryMastered && scope.length > 0) {
-                confetti({ particleCount: 80, spread: 50, origin: { y: 0.7 } });
-                victoryNote.innerText = "⭐ Tout bon ! changez de catégorie maintenant";
-                victoryNote.classList.remove('hidden');
-            } else {
-                victoryNote.classList.add('hidden');
-            }
-            
-            setTimeout(nextCard, 400);
-        };
-
-        window.skipCard = async () => {
-            if (questions.length === 0) return;
-            const card = questions[currentIndex];
-            try {
-                await addDoc(collection(db, "analytics_promo"), {
-                    pseudo: userPseudo,
-                    questionId: card.id,
-                    categorie: card.cat,
-                    resultat: "skip",
-                    date: serverTimestamp()
-                });
-            } catch (e) { console.error(e); }
-            nextCard();
-        };
-
-        function updateUI() {
-            if (questions.length === 0) return;
-            const card = questions[currentIndex];
-            
-            document.getElementById('card-category').innerText = card.cat;
-            document.getElementById('card-recto').innerText = card.recto;
-            document.getElementById('card-verso').innerText = card.verso;
-            document.getElementById('card-counter').innerText = `${currentIndex + 1} / ${questions.length}`;
-            document.getElementById('flashcard').classList.remove('card-flipped');
-
-            const badge = document.getElementById('card-status');
-            const weight = userWeights[card.id];
-            if (weight === 1) {
-                badge.innerText = "● MAÎTRISÉ";
-                badge.className = "text-[10px] font-black text-teal-500 tracking-[0.2em] mb-4 block";
-            } else if (weight === 3.1) {
-                badge.innerText = "● À REVOIR";
-                badge.className = "text-[10px] font-black text-pink-500 tracking-[0.2em] mb-4 block";
-            } else {
-                badge.innerText = "● NOUVELLE QUESTION";
-                badge.className = "text-[10px] font-black text-indigo-400 tracking-[0.2em] mb-4 block";
-            }
-
-            const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
-            const total = scope.length;
-            const masteredCount = scope.filter(c => userWeights[c.id] === 1).length;
-            const reviewCount = scope.filter(c => userWeights[c.id] === 3.1).length;
-            const newCount = total - (masteredCount + reviewCount);
-
-            document.getElementById('progress-text').innerText = `${masteredCount} / ${total}`;
-
-            if (progressChart) {
-                progressChart.data.datasets[0].data = [masteredCount, reviewCount, newCount];
-                progressChart.update();
-            }
+    // --- UTILS ---
+    const getBrowserData = () => {
+        const data = { browser: "Inconnu", device: "Ordinateur" };
+        const ua = navigator.userAgent;
+        if (navigator.userAgentData) {
+            const brands = navigator.userAgentData.brands;
+            const mainBrand = brands.find(b => !b.brand.includes("Not") && b.brand !== "Chromium");
+            data.browser = mainBrand ? mainBrand.brand : brands[0].brand;
+        } else {
+            if (ua.includes("Firefox")) data.browser = "Firefox";
+            else if (ua.includes("Safari") && !ua.includes("Chrome")) data.browser = "Safari";
+            else data.browser = "Navigateur Classique";
         }
-
-        window.nextCard = () => { currentIndex = (currentIndex + 1) % questions.length; updateUI(); };
-        window.prevCard = () => { currentIndex = (currentIndex - 1 + questions.length) % questions.length; updateUI(); };
-        window.flipCard = () => document.getElementById('flashcard').classList.toggle('card-flipped');
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+        const isTablet = /(ipad|tablet|playbook|silk)|(android(?!.*mobi))/i.test(ua);
+        const isMobile = /mobi|iphone|blackberry|iemobile/i.test(ua);
+        if (isTablet) data.device = "Autres";
+        else if (isMobile) data.device = "Mobile";
+        else {
+            if (navigator.userAgentData && navigator.userAgentData.mobile) data.device = "Mobile";
+            else data.device = "Ordinateur";
         }
+        return data;
+    };
 
-        function initChart() {
-            const ctx = document.getElementById('progressChart').getContext('2d');
-            if (progressChart) progressChart.destroy();
-            progressChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ["Maîtrisé", "À revoir", "Nouveau"],
-                    datasets: [{
-                        data: [0, 0, 100],
-                        backgroundColor: ['#14b8a6', '#ec4899', '#f1f5f9'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    cutout: '80%', 
-                    plugins: { legend: { display: false } },
-                    animation: { duration: 1000 } 
+    // --- LOGIC ---
+    window.startSession = async () => {
+        const input = document.getElementById('pseudo-input').value;
+        if (input.trim().length < 2) return alert("Veuillez entrer un pseudo valide.");
+        userPseudo = input.trim();
+        allCards.forEach(card => userWeights[card.id] = 3); 
+
+        try {
+            const q = query(collection(db, "analytics_promo"), where("pseudo", "==", userPseudo));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                if(data.resultat !== "skip") {
+                    userWeights[data.questionId] = (data.resultat === "réussi") ? 1 : 3.1;
                 }
             });
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            initChart();
+            filterCards('Tous'); 
+        } catch (error) {
+            console.error(error);
+            initChart();
+            filterCards('Tous');
         }
+    };
 
-        document.addEventListener('keydown', (e) => {
-            if(!document.getElementById('welcome-screen').classList.contains('hidden')) return;
-            if(e.code === 'Space') { e.preventDefault(); flipCard(); }
-            if(e.code === 'ArrowRight' || e.code === 'Enter') markAs(true);
-            if(e.code === 'ArrowLeft' || e.code === 'Delete' || e.code === 'Backspace') markAs(false);
-            if(e.code === 'KeyS') skipCard();
+    window.filterCards = (category) => {
+        currentCategory = category;
+        currentIndex = 0;
+        document.getElementById('victory-note').classList.add('hidden');
+        let baseCards = category === 'Tous' ? [...allCards] : allCards.filter(c => c.cat === category);
+        let weightedPool = [];
+        baseCards.forEach(card => {
+            const w = userWeights[card.id] || 3;
+            const loop = Math.floor(w); 
+            for (let i = 0; i < loop; i++) weightedPool.push(card);
         });
+        questions = shuffleArray([...new Set(weightedPool)]);
+        updateUI();
+    };
 
-        window.markAs = markAs;
-        window.skipCard = skipCard;
-    </script>
+    window.markAs = async (known) => {
+        if (questions.length === 0) return;
+        
+        const endTime = Date.now();
+        const reflectionTimeSeconds = cardStartTime ? (endTime - cardStartTime) / 1000 : null;
+        const card = questions[currentIndex];
+        const deviceInfo = getBrowserData();
+        const isFlipped = document.getElementById('flashcard').classList.contains('card-flipped');
+        
+        const weight = userWeights[card.id];
+        let libelleAvant = (weight === 1) ? "maîtrisé" : (weight === 3.1 ? "à revoir" : "nouveau");
+
+        userWeights[card.id] = known ? 1 : 3.1;
+
+        try {
+            await addDoc(collection(db, "analytics_promo"), {
+                pseudo: userPseudo,
+                questionId: card.id,
+                categorie: card.cat,
+                resultat: known ? "réussi" : "à revoir",
+                maitriseInstinctive: (known && !isFlipped),
+                etatAuClic: libelleAvant,
+                tempsReflexion: reflectionTimeSeconds, // NOUVEAU
+                browser: deviceInfo.browser,           // NOUVEAU
+                device: deviceInfo.device,             // NOUVEAU
+                date: serverTimestamp()
+            });
+        } catch (e) { console.error(e); }
+
+        updateUI();
+        // Logique de victoire...
+        const allMastered = allCards.filter(c => userWeights[c.id] === 1).length === allCards.length;
+        const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
+        const categoryMastered = scope.filter(c => userWeights[c.id] === 1).length === scope.length;
+        const victoryNote = document.getElementById('victory-note');
+        if (allMastered) {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            victoryNote.innerText = "🏆 Maîtrise totale !";
+            victoryNote.classList.remove('hidden');
+        } else if (categoryMastered) {
+            confetti({ particleCount: 80, spread: 50, origin: { y: 0.7 } });
+            victoryNote.innerText = "⭐ Catégorie maîtrisée !";
+            victoryNote.classList.remove('hidden');
+        }
+        setTimeout(nextCard, 400);
+    };
+
+    window.skipCard = () => {
+        // Point 1 : Suppression de l'addDoc ici. On passe juste à la suivante.
+        nextCard();
+    };
+
+    function updateUI() {
+        if (questions.length === 0) return;
+        const card = questions[currentIndex];
+        cardStartTime = Date.now(); // On déclenche le chrono à l'affichage
+
+        document.getElementById('card-category').innerText = card.cat;
+        document.getElementById('card-recto').innerText = card.recto;
+        document.getElementById('card-verso').innerText = card.verso;
+        document.getElementById('card-counter').innerText = `${currentIndex + 1} / ${questions.length}`;
+        document.getElementById('flashcard').classList.remove('card-flipped');
+
+        // Gestion des badges et graphiques (inchangé)...
+        const badge = document.getElementById('card-status');
+        const weight = userWeights[card.id];
+        if (weight === 1) {
+            badge.innerText = "● MAÎTRISÉ";
+            badge.className = "text-[10px] font-black text-teal-500 tracking-[0.2em] mb-4 block";
+        } else if (weight === 3.1) {
+            badge.innerText = "● À REVOIR";
+            badge.className = "text-[10px] font-black text-pink-500 tracking-[0.2em] mb-4 block";
+        } else {
+            badge.innerText = "● NOUVELLE QUESTION";
+            badge.className = "text-[10px] font-black text-indigo-400 tracking-[0.2em] mb-4 block";
+        }
+        const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
+        const masteredCount = scope.filter(c => userWeights[c.id] === 1).length;
+        const reviewCount = scope.filter(c => userWeights[c.id] === 3.1).length;
+        const newCount = scope.length - (masteredCount + reviewCount);
+        document.getElementById('progress-text').innerText = `${masteredCount} / ${scope.length}`;
+        if (progressChart) {
+            progressChart.data.datasets[0].data = [masteredCount, reviewCount, newCount];
+            progressChart.update();
+        }
+    }
+
+    // Fonctions shuffle, nextCard, initChart, Keydown (inchangées)...
+    window.nextCard = () => { currentIndex = (currentIndex + 1) % questions.length; updateUI(); };
+    window.prevCard = () => { currentIndex = (currentIndex - 1 + questions.length) % questions.length; updateUI(); };
+    window.flipCard = () => document.getElementById('flashcard').classList.toggle('card-flipped');
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+    function initChart() {
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        if (progressChart) progressChart.destroy();
+        progressChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Maîtrisé", "À revoir", "Nouveau"],
+                datasets: [{
+                    data: [0, 0, 100],
+                    backgroundColor: ['#14b8a6', '#ec4899', '#f1f5f9'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } }
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if(!document.getElementById('welcome-screen').classList.contains('hidden')) return;
+        if(e.code === 'Space') { e.preventDefault(); flipCard(); }
+        if(e.code === 'ArrowRight' || e.code === 'Enter') markAs(true);
+        if(e.code === 'ArrowLeft' || e.code === 'Delete' || e.code === 'Backspace') markAs(false);
+        if(e.code === 'KeyS') skipCard();
+    });
+</script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
