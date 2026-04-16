@@ -42,26 +42,21 @@ def run_ingestion():
 
     print(f"Extraction réussie : {len(rows_to_insert)} documents.")
 
-    # 3. CHARGEMENT VERS BIGQUERY (CORRIGÉ POUR LE SANDBOX)
+# 3. CHARGEMENT VERS BIGQUERY (Version spéciale Sandbox)
     if rows_to_insert:
         table_ref = f"{DEST_PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
         
+        # On retire 'time_partitioning' qui pose problème avec le Sandbox
         job_config = bigquery.LoadJobConfig(
             write_disposition="WRITE_TRUNCATE",
-            autodetect=True,
-            # AJOUT INDISPENSABLE POUR LE MODE GRATUIT :
-            time_partitioning=bigquery.TimePartitioning(
-                type_=bigquery.TimePartitioningType.DAY,
-                field="ingested_at",  # Utilise ta colonne de timestamp
-                expiration_ms=30 * 24 * 60 * 60 * 1000  # Expire après 30 jours (< 60j)
-            ),
+            autodetect=True
         )
 
         print(f"Envoi des données vers {table_ref}...")
         job = bq_client.load_table_from_json(
             rows_to_insert, table_ref, job_config=job_config
         )
-        job.result() 
+        job.result() # Attend la fin du job
 
         print(f"--- Succès ! Données disponibles dans {DEST_PROJECT_ID} ---")
     else:
