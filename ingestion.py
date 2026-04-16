@@ -46,14 +46,20 @@ def run_ingestion():
 
     print(f"Extraction réussie : {len(rows_to_insert)} documents.")
 
-    # 3. CHARGEMENT VERS BIGQUERY
+# 3. CHARGEMENT VERS BIGQUERY
     if rows_to_insert:
         table_ref = f"{DEST_PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
         
-        # WRITE_TRUNCATE : vide la table et remplace par les nouvelles données
+        # Configuration pour respecter les contraintes du mode Sandbox (gratuit)
         job_config = bigquery.LoadJobConfig(
             write_disposition="WRITE_TRUNCATE",
             autodetect=True,
+            # On active le partitionnement par jour sur la colonne technique
+            time_partitioning=bigquery.TimePartitioning(
+                type_=bigquery.TimePartitioningType.DAY,
+                field="ingested_at", # Utilise ta colonne existante
+                expiration_ms=30 * 24 * 60 * 60 * 1000  # Expire après 30 jours
+            ),
         )
 
         print(f"Envoi des données vers {table_ref}...")
