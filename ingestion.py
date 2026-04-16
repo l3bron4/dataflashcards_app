@@ -42,23 +42,26 @@ def run_ingestion():
 
     print(f"Extraction réussie : {len(rows_to_insert)} documents.")
 
-# 3. CHARGEMENT VERS BIGQUERY (Version spéciale Sandbox)
+# 3. CHARGEMENT VERS BIGQUERY (VERSION ULTIME SANDBOX)
     if rows_to_insert:
         table_ref = f"{DEST_PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
         
-        # On retire 'time_partitioning' qui pose problème avec le Sandbox
+        # On reste sur le strict minimum : pas de partition, juste l'autodetect
         job_config = bigquery.LoadJobConfig(
             write_disposition="WRITE_TRUNCATE",
-            autodetect=True
+            autodetect=True,
         )
 
         print(f"Envoi des données vers {table_ref}...")
-        job = bq_client.load_table_from_json(
-            rows_to_insert, table_ref, job_config=job_config
-        )
-        job.result() # Attend la fin du job
-
-        print(f"--- Succès ! Données disponibles dans {DEST_PROJECT_ID} ---")
+        try:
+            job = bq_client.load_table_from_json(
+                rows_to_insert, table_ref, job_config=job_config
+            )
+            job.result() # Attend la fin du job
+            print(f"--- Succès ! Données disponibles dans {DEST_PROJECT_ID} ---")
+        except Exception as e:
+            print(f"Erreur lors de l'insertion : {e}")
+            raise
     else:
         print("Aucune donnée trouvée.")
 
