@@ -10,25 +10,38 @@
     
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-        getFirestore, collection, addDoc, serverTimestamp, 
-        query, where, getDocs 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import confetti from 'https://cdn.skypack.dev/canvas-confetti';
+    import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- CONFIGURATION ---
     const firebaseConfig = {
         apiKey: "AIzaSyC80dJTJ-tzpkH7FTeZgi9RksyVaiUGq9M",
         authDomain: "dataflashcards.firebaseapp.com",
         projectId: "dataflashcards",
         storageBucket: "dataflashcards.firebasestorage.app",
         messagingSenderId: "190231819778",
-        appId: "1:190231819778:web:64832f57614b20f6fd591b",
-        measurementId: "G-TG7RX5WLS0"
+        appId: "1:190231819778:web:64832f57614b20f6fd591b"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // Initialisation forcée au démarrage
+    window.startSession = () => {
+        const input = document.getElementById('pseudo-input').value;
+        if (!input || input.trim().length < 2) {
+            alert("Pseudo trop court !");
+            return;
+        }
+        console.log("Démarrage de la session pour :", input);
+        document.getElementById('welcome-screen').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        
+        // Sécurité : on déclenche l'init du jeu
+        if (typeof filterCards === 'function') filterCards('Tous');
+        if (typeof initChart === 'function') initChart();
+    };
+
+    // Le reste de tes fonctions (filterCards, markAs, etc.) doit être APRES
+    // Assure-toi de bien fermer chaque fonction.
 
     // --- GLOBALS ---
     let userPseudo = "";
