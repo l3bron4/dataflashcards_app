@@ -37,41 +37,222 @@
     let currentIndex = 0;
     let progressChart = null;
     let currentCategory = 'Tous';
-    let cardStartTime = null;
+    let cardStartTime = null; // Pour le chrono
 
     const rawCards = [
-        { id: "q_001.1", cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC(ma_date , YEAR)." },
-        { id: "q_002.1", cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '' est une valeur existante mais vide. NULL ne compte pas !" },
-        { id: "q_003.1", cat: "SQL", recto: "Comment transformer des lignes en colonnes ?", verso: "Via un PIVOT ou des CASE WHEN agrégés." },
-        { id: "q_004.1", cat: "SQL", recto: "Quel est l'ordre d'exécution réel d'une requête SQL ?", verso: "0. CTE 1. FROM/JOIN, 2. WHERE, 3. GROUP BY, 4. HAVING, 5. WINDOW, 6. SELECT, 7. DISTINCT, 8. ORDER BY, 9. LIMIT." },
-        { id: "q_005.1", cat: "SQL", recto: "Comment dédoublonner avec une Window Function ?", verso: "Utilise QUALIFY ROW_NUMBER() OVER(PARTITION BY <...> ORDER BY date DESC) = 1." },
-        { id: "q_006.1", cat: "SQL", recto: "À quoi sert la fonction COALESCE ?", verso: "Elle remplace la première valeur NULL rencontrée par une valeur par défaut choisie." },
-        { id: "q_007.1", cat: "SQL", recto: "ROW_NUMBER() vs RANK() ?", verso: "ROW_NUMBER() donne un index unique (1,2,3). RANK() donne le même rang en cas d'égalité (1,2,2,4)." },
-        { id: "q_008.1", cat: "SQL", recto: "À quoi servent LAG() et LEAD() ?", verso: "LAG accède à la ligne précédente, LEAD accède à la ligne suivante dans une partition." },
-        { id: "q_161.1", cat: "Analytics Method", recto: "Comment répartir son temps pour les (4) étapes du Dashboarding ?", verso: "Cadrage (50%), SQL (20%), Dashboard (10%), Vérification (20%)." },
-        { id: "q_051.1", cat: "dbt", recto: "À quoi sert la fonction {{ ref() }} ?", verso: "1. Crée les dépendances dans le DAG. 2. Gère la portabilité entre dev et prod." },
-        { id: "q_181.1", cat: "Data Platform", recto: "ETL vs ELT ?", verso: "ETL: Transforme avant chargement. ELT: Charge puis transforme dans le DW (moderne/dbt)." },
-        { id: "q_111.1", cat: "Business", recto: "Qu'est-ce qu'une analyse de Cohorte ?", verso: "L'étude d'un groupe d'utilisateurs ayant un point commun au fil du temps." }
-        // ... (Ajoutez le reste de vos cartes ici)
+                    // SQL -
+{ id: "q_001.2", cat: "SQL", recto: "VERSION 2 TEST : Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC(ma_date , YEAR)." },
+{ id: "q_002.1", cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '_' est une valeur existante mais vide. NULL ne compte pas !" },
+{ id: "q_003.1", cat: "SQL", recto: "Comment transformer des lignes en colonnes ?", verso: "Via un PIVOT ou des CASE WHEN agrégés." },
+{ id: "q_004.1", cat: "SQL", recto: "Quel est l'ordre d'exécution réel d'une requête SQL ?", verso: "0, CTE 1. FROM/JOIN/UNNEST, 2. WHERE, 3. GROUP BY, 4. HAVING, 5. WINDOW, 6. SELECT, 7. DISTINCT, 8. ORDER BY, 9. LIMIT." },
+{ id: "q_005.1", cat: "SQL", recto: "Comment dédoublonner avec une Window Function ?", verso: "Utilise QUALIFY ROW_NUMBER() OVER(PARTITION BY <...> ORDER BY date DESC) = 1." },
+{ id: "q_006.1", cat: "SQL", recto: "À quoi sert la fonction COALESCE ?", verso: "Elle remplace la première valeur NULL rencontrée par une valeur par défaut choisie." },
+{ id: "q_007.1", cat: "SQL", recto: "ROW_NUMBER() vs RANK() ?", verso: "ROW_NUMBER() donne un index unique (1,2,3). RANK() donne le même rang en cas d'égalité (1,2,2,4)." },
+{ id: "q_008.1", cat: "SQL", recto: "À quoi servent LAG() et LEAD() ?", verso: "LAG accède à la ligne précédente, LEAD accède à la ligne suivante dans une partition." },
+{ id: "q_009.1", cat: "SQL", recto: "ROW_NUMBER() vs RANK() vs DENSE_RANK() ?", verso: "ROW_NUMBER : Numérotation continue (1,2,3). RANK : Sauts en cas d'égalité (1,2,2,4). DENSE_RANK : Pas de saut (1,2,2,3)." },
+{ id: "q_010.1", cat: "SQL", recto: "À quoi sert la clause QUALIFY ?", verso: "À filtrer le résultat d'une Window Function directement (ex: QUALIFY ROW_NUMBER() = 1), évitant ainsi une sous-requête." },
+{ id: "q_011.1", cat: "SQL", recto: "Différence entre WHERE et HAVING ?", verso: "WHERE filtre les lignes AVANT l'agrégation. HAVING filtre les groupes APRÈS le GROUP BY." },
+{ id: "q_012.1", cat: "SQL", recto: "Qu'est-ce que le COALESCE ?", verso: "Une fonction qui retourne la première valeur non nulle d'une liste (ex: COALESCE(tel, email, 'Inconnu'))." },
+{ id: "q_013.1", cat: "SQL", recto: "À quoi servent LAG() et LEAD() ?", verso: "Ce sont des window functions. LAG accède à la ligne précédente. LEAD accède à la ligne suivante. Vital pour calculer des évolutions (%M-1, MoM, YoY)." },
+{ id: "q_014.1", cat: "SQL", recto: "Différence entre INNER JOIN et LEFT JOIN ?", verso: "INNER : Garde uniquement les lignes communes dans les deux tables à la clé de jointure. LEFT : Garde tout de la table de gauche, complète avec des lignes communes avec la table de droite (INNER)." },
+{ id: "q_015.1", cat: "SQL", recto: "Qu'est-ce qu'une CTE (Common Table Expression) ?", verso: "Un bloc de code temporaire défini par WITH, plus lisible qu'une sous-requête imbriquée. Celle-ci s'execute avant la requete final" },
+{ id: "q_016.1", cat: "SQL", recto: "À quoi sert la fonction CAST() ?", verso: "À modifier le type de donnée d'une colonne (ex: transformer une chaîne string '2023-01-01' en type DATE). Ou un FLOAT en INT CAST(6,0 AS INT64)" },
+{ id: "q_017.1", cat: "SQL", recto: "Différence entre COUNT(*) et COUNT(colonne) ?", verso: "COUNT(*) compte toutes les lignes. COUNT(colonne) ignore les valeurs NULL de cette colonne." },
+{ id: "q_018.1", cat: "SQL", recto: "Qu'est-ce qu'un CROSS JOIN ?", verso: "Un produit cartésien : chaque ligne de A est associée à chaque ligne de B. Attention à l'explosion du volume !" },
+{ id: "q_019.1", cat: "SQL", recto: "À quoi sert la clause PARTITION BY ?", verso: "À définir des groupes de calcul pour une Window Function sans réduire le nombre de lignes (contrairement au GROUP BY)." },
+{ id: "q_020.1", cat: "SQL", recto: "Comment extraire l'année d'une date ?", verso: "EXTRACT(YEAR FROM ma_date) ou DATE_TRUNC('year', ma_date)." },
+{ id: "q_021.1", cat: "SQL", recto: "Différence entre NULL et chaîne vide '' ?", verso: "NULL est l'absence de valeur. '' est une valeur existante mais vide. Très important pour les calculs !" },
+{ id: "q_022.1", cat: "SQL", recto: "Comment transformer des lignes en colonnes ?", verso: "Via un PIVOT ou des CASE WHEN agrégés." },
+{ id: "q_023.1", cat: "SQL", recto: "Quelles sont les 3 étapes (ou fonctions) pour parser un champ JSON complexe contenant un tableau d'objets ?", verso: "1. JSON_EXTRACT_ARRAY pour isoler le tableau. 2. UNNEST pour éclater le tableau en lignes. 3. JSON_VALUE pour extraire les clés de chaque objet" },
+{ id: "q_024.1", cat: "SQL", recto: "Quelle est la fonction principale pour extraire une valeur simple (String/Int) d'un champ JSON dans BigQuery ?", verso: "JSON_VALUE(champ_json, '$.ma_cle')" },
+{ id: "q_025.1", cat: "SQL", recto: "Structure d'un CASE WHEN ?", verso: "CASE WHEN condition THEN result ELSE default END." },
+{ id: "q_026.1", cat: "SQL", recto: "Cite 3 raisons majeures pour lesquelles le SELECT * est proscrit en production ?", verso: "1. Coût (scan de données inutile). 2. Performance (latence réseau/mémoire). 3. Maintenance (fragilité face aux changements de schéma)." },
+{ id: "q_027.1", cat: "SQL", recto: "À quoi sert la clause DISTINCT ?", verso: "Supprime les doublons du résultat final pour ne garder que les combinaisons de lignes uniques." },
+{ id: "q_028.1", cat: "SQL", recto: "Différence entre DATE_TRUNC et DATE_DIFF ?", verso: "TRUNC arrondit une date. DIFF calcule l'écart (en jours, mois, ans) entre deux dates distinctes." },
+{ id: "q_029.1", cat: "SQL", recto: "Quelle est la différence entre les types INT et FLOAT ?", verso: "INT stocke des nombres entiers (ex: 10). FLOAT stocke des nombres à virgule flottante (ex: 10.5)." },
+{ id: "q_030.1", cat: "SQL", recto: "Comment combiner deux chaînes de caractères en une seule ?", verso: "Utilise la fonction CONCAT(str1, str2) ou l'opérateur de concaténation || selon l'entrepôt." },
+{ id: "q_031.1", cat: "SQL", recto: "En Regex à quoi correspond le % et le _?", verso: "% est n'importe quelle caractère de longuer 0+ et _ c'est 1 caractères. Exemple mail '%@%.__%'" },
+{ id: "q_032.1", cat: "SQL", recto: "Comment consulter la structure (DDL) d'une table dans BigQuery ?", verso: "En interrogeant la vue système : SELECT ddl FROM dataset.INFORMATION_SCHEMA.TABLES WHERE table_name = '...';" },
+{ id: "q_033.1", cat: "SQL", recto: "À quoi sert la fonction COUNT(*) ?", verso: "Compte le nombre total de lignes dans une table ou un groupe, incluant les lignes avec des valeurs NULL." },
+{ id: "q_034.1", cat: "SQL", recto: "Comment trouver la valeur la plus élevée d'une colonne ?", verso: "Utilise la fonction d'agrégation MAX(nom_colonne)." },
+{ id: "q_035.1", cat: "SQL", recto: "À quoi sert l'opérateur IN ?", verso: "Filtre les lignes dont la valeur correspond à un élément présent dans une liste spécifiée (ex: IN ('A', 'B')). Une sorte de 'AND'" },
+{ id: "q_036.1", cat: "SQL", recto: "Pourquoi utilise-t-on le mot-clé AS ?", verso: "Pour créer un alias, renommant temporairement une colonne ou une table pour rendre le code plus lisible." },
+{ id: "q_037.1", cat: "SQL", recto: "Que fait SELECT * EXCEPT(col_a) ?", verso: "Sélectionne toutes les colonnes de la table à l'exception de celle(s) précisée(s) entre parenthèses." },
+{ id: "q_038.1", cat: "SQL", recto: "Comment filtrer une plage de valeurs (ex: entre 10 et 20 INCLUS) ?", verso: "Utilise la clause WHERE colonne BETWEEN 10 AND 20." },
+{ id: "q_039.1", cat: "SQL", recto: "Comment exclure les valeurs manquantes d'un résultat ?", verso: "Utilise la condition WHERE colonne IS NOT NULL." },
+{ id: "q_040.1", cat: "SQL", recto: "À quoi sert la fonction ROUND() ?", verso: "À arrondir un nombre à un certain nombre de décimales. Exemple : ROUND(prix, 2)." },
+{ id: "q_041.1", cat: "SQL", recto: "Comment trier les résultats par ordre décroissant ?", verso: "Utilise la clause ORDER BY nom_colonne DESC." },
+{ id: "q_042.1", cat: "SQL", recto: "Structure de base d'une Window Function ?", verso: "FONCTION() OVER(PARTITION BY col_a ORDER BY col_b)." },
+{ id: "q_043.1", cat: "SQL", recto: "Comment numéroter les lignes au sein d'un groupe ?", verso: "Utilise ROW_NUMBER() OVER(PARTITION BY groupe ORDER BY date DESC)." },
+{ id: "q_044.1", cat: "SQL", recto: "Quelle est l'utilité de CURRENT_DATE ?", verso: "Retourne la date actuelle du système lors de l'exécution de la requête. La zone UTC peut être préciser en argument" },
+{ id: "q_045.1", cat: "SQL", recto: "Différence entre CREATE TABLE et CREATE VIEW ?", verso: "TABLE stocke les données physiquement (coût stockage). VIEW est une requête enregistrée calculée à la demande." },
+            
+        // Analytics Method -
+     
+{ id: "q_161.1", cat: "Analytics Method", recto: "Comment répartir son temps pour les (4) étapes du Dashboarding ?", verso: "Cadrage / Préparation (50%) Problématique claire → Tant que vous comprenez pas le problème, Ne pas commencer. Pourquoi ? Quoi ? Et Alors ?, SQL (20%), Construire le dashboard (10%), Vérifier les chiffres (20%). " },
+{ id: "q_162.1", cat: "Analytics Method", recto: "Quelles sont les 3 niveaux d'un dashboard bien construit ?", verso: "De haut en bas. 1. Synthèse (3/4 KPIs flash). 2. Explication (Courbes d'évolution, répartition). 3. Exploration (Tableaux granulaires, graphique à plusieurs dimensions)." },
+{ id: "q_163.1", cat: "Analytics Method", recto: "Que faire en cas d'écart de chiffres entre services ?", verso: "1. Communiquer avec les métiers pour voir les définitions et aligner si possible (ex: date de commande vs date de facture). 2. Voir si l'ingestion est correcte 3. Voir si le nettoyage et autres transformations sont conformes" },
+{ id: "q_164.1", cat: "Analytics Method", recto: "Comment structurer un Dashboard ?", verso: "Structure en 'Entonnoir' : 1. KPIs globaux (Est-ce que tout va bien ?), 2. Tendances (Qu’est ce qui se passe ? pb / opportunités, où, quand, qui, quoi, … ?), Chaque graph réponds à une question 3. Tables granulaires exploratoires" },
+{ id: "q_165.1", cat: "Analytics Method", recto: "C'est quoi une clé primaire ?", verso: "C'est une colonne (ou plusieurs) qui permet d'identifier de manière unique une ligne de la table" },
+{ id: "q_166.1", cat: "Analytics Method", recto: "Qu'est-ce que la granularité d'une table ?", verso: "La granularité c'est le niveau de détail (combinaison de colonnes) qui identifie une ligne unique, même sans clé primaire. '1 ligne par ...'" },
+{ id: "q_167.1", cat: "Analytics Method", recto: "Pourquoi faut-il absolument éviter les jointures N-N ?", verso: "Elles créent une 'explosion de lignes' (fan-out : multiplication de granularité) et faussent totalement les agrégations (SUM)." },
+{ id: "q_168.1", cat: "Analytics Method", recto: "C'est quoi un KPI - S.M.A.R.T. ?", verso: "Spécifique, Mesurable, Atteignable, Réaliste, Temporellement défini." },
+{ id: "q_169.1", cat: "Analytics Method", recto: "Différence entre Star Schema et Snowflake Schema ?", verso: "Star : Tables de dimensions jointes directement aux faits (simple). Snowflake : Dimensions normalisées (plus complexe)." },
+{ id: "q_170.1", cat: "Analytics Method", recto: "Pourquoi le cadrage prend-il 50% du temps ?", verso: "Parce qu'il vaut mieux une réponse approximative à la bonne question qu'une réponse parfaite à la mauvaise question." },
+{ id: "q_171.1", cat: "Analytics Method", recto: "Modélisation Top-Down vs Bottom-Up ?", verso: "Top-Down : Partir des tables brutes et aller vers les tables pour les besoins metiers // Bottom-Up : Partir de la table finale revée et remonter dans les tables intermédiaires jusqu'au données brutes" },
+{ id: "q_172.1", cat: "Analytics Method", recto: "Quel est l'objectif principal de la documentation des modèles dans un projet (dbt) ?", verso: "Permettre aux utilisateurs de trouver leurs réponses en autonomie et faciliter l'intégration (onboarding) des nouveaux membres de l'équipe." },
+{ id: "q_173.1", cat: "Analytics Method", recto: "Compare la table et la view sur trois critères suivant : Stockage, Performance et Fraîcheur.", verso: "1. Table : Stockage (+) / Performance lecture (+++) / Fraîcheur (Limitée au dernier run). 2. View : Stockage (Négligeable) / Performance lecture (+) / Fraîcheur (Temps réel)." },
+{ id: "q_174.1", cat: "Analytics Method", recto: "Dans la modélisation de données, quel est l'ordre logique de transformation ?", verso: "Sources (Brutes) ➔ Staging (Vues) [➔ Intermediate (Vues)] ➔ Marts (Tables) ➔ Reporting (Vues métiers)." },
+{ id: "q_175.1", cat: "Analytics Method", recto: "Quels sont les 3 axes majeurs à suivre pour améliorer un code SQL (Factorisation et Lisibilité) selon le principe DRY ?", verso: "1. Lisibilité : Standardiser la forme (Indentation, MAJUSCULES pour le SQL, alias explicites). 2. Anti-Redondance : Centraliser les calculs et jointures répétées. 3. Réutilisabilité : Appliquer la règle d'une seule CTE par concept." },
+        
+        // dbt -
+        
+{ id: "q_051.1", cat: "dbt", recto: "À quoi sert la fonction {{ ref() }} ?", verso: "1. Crée les dépendances dans le DAG. 2. Gère automatiquement la portabilité (bascule entre dev et prod) avec la configuration de profiles.yml." },
+{ id: "q_052.1", cat: "dbt", recto: "Quelle est la différence entre ref() et source() ?", verso: "ref() pointe vers un modèle dbt. source() pointe vers une table brute externe définie dans un fichier nommé source.yml en YAML." },
+{ id: "q_053.1", cat: "dbt", recto: "Qu'est-ce que le DAG ?", verso: "Directed Acyclic Graph. C'est le graphe qui ordonne l'exécution de tes modèles sans boucles infinies." },
+{ id: "q_054.1", cat: "dbt", recto: "Pour quel type de données l'usage des Seeds est-il recommandé ?", verso: "Pour des données statiques ou qui changent très rarement (ex: codes pays, liste des départements, catégories de produits fixes). Format CSV." },
+{ id: "q_055.1", cat: "dbt", recto: "Cite 3 raisons de ne pas utiliser les Seeds pour des données volumineuses ou sensibles", verso: "Parce que les seeds sont visibles dans les git : 1. Sécurité (exposition des données perso PII). 2. Performance (lenteur des commandes Git en CI). 3. Scalabilité (Git n'est pas un outil de stockage de base de données)." },
+{ id: "q_056.1", cat: "dbt", recto: "Comment définit-on la matérialisation d'un modèle dbt directement dans son fichier .sql ?", verso: "Via le bloc de configuration : {{ config(materialized='table') }} (ou 'view') directement dans le modèle ou dans le projet.yml pour definir la config par défaut suivant les dossiers models." },
+{ id: "q_057.1", cat: "dbt", recto: "Quelles sont les 4 valeurs principales que peut prendre l'argument materialized dans un bloc config() ?", verso: "view (par défaut), table, incremental et ephemeral." },
+{ id: "q_058.1", cat: "dbt", recto: "Qu'est-ce qu'un modèle 'Incremental' ?", verso: "Un modèle qui n'ajoute que les nouvelles données depuis le dernier run au lieu de reconstruire toute la table. Vital pour les gros volumes." },
+{ id: "q_059.1", cat: "dbt", recto: "Qu'est-ce qu'un modèle 'Ephemeral' ?", verso: "Un modèle qui s'insère comme une CTE. Il permet de 'nettoyer' l'entrepôt en masquant les étapes de calcul intermédiaires qui n'ont pas d'intérêt pour les utilisateurs finaux." },
+{ id: "q_060.1", cat: "dbt", recto: "Comment définir une clé primaire unique dans dbt ?", verso: "Via un test 'unique' dans le .yml (souvent schema.yml) ou via une surrogate key (hachage)." },
+{ id: "q_061.1", cat: "dbt", recto: "Qu'est-ce qu'un SNAPSHOT ?", verso: "Un outil pour historiser les changements (SCD Type 2) sur une table source (ex: suivi du statut d'une commande)." },
+{ id: "q_062.1", cat: "dbt", recto: "Quelles sont les deux stratégies possibles pour détecter un changement dans un Snapshot ?", verso: "1. timestamp (utilise une colonne de date de mise à jour). 2. check (compare une liste de colonnes spécifiques)" },
+{ id: "q_063.1", cat: "dbt", recto: "À quoi sert le dossier macros/ ?", verso: "À stocker des fonctions Jinja réutilisables pour automatiser le SQL." },
+{ id: "q_064.1", cat: "dbt", recto: "Comment installer un package externe (ex: dbt_utils, codegen) ?", verso: "1. Lister dans packages.yml. packages: - package: dbt-labs/dbt_utils version: 0.7.12.  2. Lancer la commande 'dbt deps'." },
+{ id: "q_065.1", cat: "dbt", recto: "Différence entre 'dbt run' et 'dbt build' ?", verso: "run : exécute seulement les modèles. build : exécute les modèles + les tests + les snapshots + les seeds." },
+{ id: "q_066.1", cat: "dbt", recto: "Qu'est-ce que le fichier manifest.json ?", verso: "C'est un fichier généré automatiquement qui contient la description complète de l'architecture, des nœuds, son état et des dépendances du projet. Situé dans le dossier target." },
+{ id: "q_067.1", cat: "dbt", recto: "Comment tester la fraîcheur d'une source ?", verso: " Via la configuration 'freshness' dans le YAML de la source (warn_after / error_after). Puis lancer dbt source freshness" },
+{ id: "q_068.1", cat: "dbt", recto: "À quoi sert principalement la variable 'target' ?", verso: "À identifier l'environnement de destination (dev, prod, qa) via le fichier profiles.yml pour adapter la connexion et le comportement de dbt." },
+{ id: "q_069.1", cat: "dbt", recto: "Quelles sont les 4 couches classiques d'un projet dbt ?", verso: "1. Sources (Brut), 2. Staging (Nettoyage), 3. Intermediate (Logique complexe), 4. Marts (Business)." },
+{ id: "q_070.1", cat: "dbt", recto: "Quelle est la différence entre ref() et source() ?", verso: "Ref() lie deux modèles dbt (crée le DAG). Source() lie dbt à une table brute externe." },
+{ id: "q_071.1", cat: "dbt", recto: "À quoi sert le tiret dans {%- ou -%}?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL compilé." },
+{ id: "q_072.1", cat: "dbt", recto: "Qu'est-ce que le 'Source Freshness' ?", verso: "Un test qui vérifie si les données sources ont été mises à jour récemment (ex: < 24h)." },
+{ id: "q_073.1", cat: "dbt", recto: "Quels sont les 4 tests génériques de dbt ?", verso: "Unique, Not_null, Accepted_values, Relationships." },
+{ id: "q_074.1", cat: "dbt", recto: "À quoi sert le tiret dans {%- ou -%} ?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL compilé." },
+{ id: "q_075.1", cat: "dbt", recto: "Quelle commande permet de savoir si les données sources ingérées sont récentes?", verso: "dbt source freshness." },
+{ id: "q_076.1", cat: "dbt", recto: "À quoi sert le tiret dans {%- ... -%} ?", verso: "C'est le 'whitespace control' : il supprime les espaces et sauts de ligne inutiles dans le SQL final. Il facile donc la lecture du SQL compilé." },
+{ id: "q_077.1", cat: "dbt", recto: "Comment créer une variable Jinja locale ?", verso: "Utilise {% set ma_var = 'valeur' %}." },
+{ id: "q_078.1", cat: "dbt", recto: "Comment appeler en Jinja une variable globale définie dans dbt_project.yml ?", verso: "Via la fonction {{ var(''nom_de_la_variable') }}." },
+{ id: "q_079.1", cat: "dbt", recto: "Qu'est-ce que l'objet 'loop' dans une boucle for Jinja ?", verso: "Un objet contenant des infos sur l'itération (loop.first, loop.last, loop.index)." },
+{ id: "q_080.1", cat: "dbt", recto: "Quel bloc Jinja spécifique doit-on ajouter dans un modèle incremental pour filtrer les données déjà existantes ?", verso: "Le bloc {% if is_incremental() %}. Il permet de n'ajouter que les lignes dont la date est supérieure à la date max déjà présente en table." },
+{ id: "q_081.1", cat: "dbt", recto: "Comment écrire un commentaire visible uniquement par Jinja ?", verso: "Utilise la syntaxe {# mon commentaire #}." },
+{ id: "q_082.1", cat: "dbt", recto: "Qu'est-ce qu'une 'Surrogate Key' (clé de substitution)  ?", verso: "C'est une clé unique générée artificiellement (souvent par hachage MD5) pour identifier une ligne quand aucune colonne seul ne le permet (granularité à plusieurs colonnes)." },
+{ id: "q_083.1", cat: "dbt", recto: "Comment documenter un modèle ?", verso: "Via la propriété 'description' dans un fichier .yml ou via des blocs de doc .md externes. Puis lancer dbt docs generate." },
+{ id: "q_084.1", cat: "dbt", recto: "Où doit-on rédiger la documentation des modèles pour qu'elle reste proche du code SQL ? ", verso: " Dans les fichiers .yml (souvent schema.yml), idéalement situés dans le même dossier que les modèles SQL concernés." },
+{ id: "q_085.1", cat: "dbt", recto: "Règle d'or du Staging ?", verso: "Une table de staging par table source. Pas de jointures complexes ici, juste du nettoyage technique." },
+{ id: "q_086.1", cat: "dbt", recto: "Quelle commande permet de ne lancer que les modèles modifiés ?", verso: "dbt run --select state:modified (nécessite un fichier manifest.json)." },
+{ id: "q_087.1", cat: "dbt", recto: "Quelle est la différence de syntaxe entre afficher une variable et exécuter une instruction (ex: set) ? ", verso: "Expression (Afficher) : {{ ma_variable }} // Instruction (Action) : {% set x = 1 %} ou {% for ... %}" },
+{ id: "q_088.1", cat: "dbt", recto: "Qu'est-ce que l'ADLC dans l'écosystème dbt et à quoi correspond-il techniquement ? ", verso: "Analytics Development Life Cycle. C'est l'équivalent du CI/CD pour la data : Développement  // Test & Revue (CI). // Déploiement & Monitoring (CD)." },
+{ id: "q_089.1", cat: "dbt", recto: "Quels sont les rôles respectifs des fichiers dbt_project.yml et profiles.yml ?  ", verso: "dbt_project.yml : Configuration globale du projet (nom, chemins, modèles). // profiles.yml : Informations de connexion au Data Warehouse (target, database, user, pass). Sert de pont entre dbt et la DB." },
+{ id: "q_090.1", cat: "dbt", recto: "Quelle est la différence entre un fichier sources.yml et un fichier schema.yml ?  ", verso: "Sources : Définit les tables de données brutes externes (Input). // Schema : Utilisé pour documenter (description: ) et lister les tests les modèles créés (Output)." },
+{ id: "q_091.1", cat: "dbt", recto: "Quelle est la différence entre un Generic Test et un Singular Test ?  ", verso: "Generic : Test réutilisable défini dans le YAML (ex: unique, not_null). // Singular : Une requête SQL personnalisée dans le dossier tests/ qui échoue si elle renvoie des lignes." },
+{ id: "q_092.1", cat: "dbt", recto: "Dans une boucle {% for %}, à quoi servent loop.index et loop.index0 ?", verso: "Ce sont des compteurs d'itération : index commence à 1, tandis que index0 commence à 0." },
+{ id: "q_093.1", cat: "dbt", recto: "Quelle est la structure complète d'un bloc if en Jinja ? ", verso: "{% if condition %}  -- code si vrai{% else %}  -- code si faux {% endif %}" },
+{ id: "q_094.1", cat: "dbt", recto: "Quelle est la syntaxe pour définir une liste de fruits en Jinja et afficher le premier élément ?", verso: "Définition : {% set fruits = ['pomme', 'banane'] %}. Appel : {{ fruits[0] }}." },
+{ id: "q_095.1", cat: "dbt", recto: "Dans le dictionnaire {% set order = {'status' : 'send', 'date' : '2023'} %} comment accède-t-on à la valeur d'une clé 'status' ?", verso: "Soit par la notation pointée {{ order.status }}, soit par l'indexation {{ order['status'] }}." },
+{ id: "q_096.1", cat: "dbt", recto: "Quelle est la structure de base d'une boucle for pour parcourir une liste ou une plage de nombres ? ", verso: "{% for element in liste %}  {{ element }} {% endfor %} --(Pour une plage : {% for i in range(10) %})" },
+{ id: "q_097.1", cat: "dbt", recto: "Écris la structure de base d'une macro nommée cents_to_dollars", verso: "{% macro cents_to_dollars(column_name) %} ({{ column_name }} / 100) {% endmacro %}" },
+{ id: "q_098.1", cat: "dbt", recto: "Quelle est la différence entre une Macro dbt et une UDF (User Defined Function) ? ", verso: "Une Macro est écrite en Jinja/SQL et compilée par dbt avant l'exécution. Une UDF est une fonction créée et stockée directement sur le Data Warehouse" },
+{ id: "q_099.1", cat: "dbt", recto: "Cite 5 stratégies de chargement incrémental dans dbt ? ", verso: "1. append : Ajoute les nouvelles lignes. 2. merge : Met à jour ou insère (nécessite une unique_key). 3. delete+insert : Supprime les anciens enregistrements et insère les nouveaux. 4. insert_overwrite : Remplace des partitions entières. 5. microbatch : Traitement par fenêtres temporelles isolées." },
+{ id: "q_100.1", cat: "dbt", recto: "À quoi sert le dossier analyses/ dans un projet dbt ? ", verso: "À stocker des requêtes SQL/Jinja qui ne sont pas des modèles. Elles sont compilées pour être copiées-collées dans le DW pour du reporting ad-hoc ou des Health Checks. Pratique comme une bibliothqèes de templates et snippets" },
+        
+          // Data Platform -
+          
+{ id: "q_181.1", cat: "Data Platform", recto: "ETL vs ELT ?", verso: "ETL : Extraction - Transformation - Load : C'est plutôt l'ancien pipeline. ELT : Chargement brut puis transformation dans le DW (plus moderne/dbt), +disponibilité : pas limité par le frein du process ETL en amont, +rentable car moins de cout infrastructure de ETL, +flexibilité car la transformation peut devenir itératif ." },
+{ id: "q_182.1", cat: "Data Platform", recto: "Qu'est-ce qu'un Data Warehouse ?", verso: "Un entrepôt de données structurées et optimisées pour l'analyse (ex: Snowflake, BigQuery, Redshift)." },
+{ id: "q_183.1", cat: "Data Platform", recto: "Data Lake vs Data Warehouse ?", verso: "Lake : Stockage brut (fichiers) plutôt pour le ML. D.Warehouse : Stockage structuré (tables SQL)." },
+{ id: "q_184.1", cat: "Data Platform", recto: "Qu'est-ce que la CI/CD pour la data ?", verso: "Continious Integration /Continious Delivery (FR: déploiement) : L'automatisation des tests et du déploiement à chaque modification du code SQL. Cela vient des bonnes pratiques DevOps en developpement logiciel" },
+{ id: "q_185.1", cat: "Data Platform", recto: "C'est quoi Airflow?", verso: "Un framework Python utilisé par les Data Engineer pour orchestrer, planifier et surveiller des pipelines de données (workflows complet de l'ingestion à la BI)." },
+{ id: "q_186.1", cat: "Data Platform", recto: "Qu'est-ce que le 'Data Lineage' ?", verso: "Le traçage du chemin de la donnée, de sa source brute jusqu'au dashboard final." },
+{ id: "q_187.1", cat: "Data Platform", recto: "Cite 2 raisons d'utiliser des environnements (schémas) séparés (Dev/Prod)", verso: "1// Pour tester de nouvelles transformations sans risquer d'altérer ou de supprimer les données utilisées par les rapports officiels de l'entreprise 2// travailler en parrallèle sans écraser le travail des autres ." },
+{ id: "q_188.1", cat: "Data Platform", recto: "Quel est le processus standard pour faire passer un changement du mode 'Dev' à la branche 'Main' ?", verso: "Créer une Pull Request (PR), faire relire le code par un pair (Peer Review), et valider les tests de données avant la fusion (merge)." },
+{ id: "q_189.1", cat: "Data Platform", recto: "Table vs Vue : Quelles sont les différences majeures ?", verso: "Table : Stockée les données physiquement (analyse performante et robuste, mais données moins fraiche) => C'est un objet physique. Vue : Calculée à chaque appel (fraîche mais plus lente) Elle stoke une requete SQL, c'est un objet logique." },
+{ id: "q_190.1", cat: "Data Platform", recto: "Pourquoi dénormalise-t-on les données dans la couche finale (Marts) d'un pipeline ?", verso: "Pour simplifier l'accès aux données pour les utilisateurs métiers (pas de jointures complexes à faire) et accélérer l'affichage des rapports. Une 'Wide Table'" },
+{ id: "q_191.1", cat: "Data Platform", recto: "C'est quoi le  JSON ?", verso: "Format texte léger pour échanger des données. Organisation basée sur des paires 'Clé : Valeur'. Les données sont stockées entre accolades {} pour les objets et crochets [] pour les listes (arrays)." },
+{ id: "q_192.1", cat: "Data Platform", recto: "C'est quoi un Framework", verso: "Ensemble d'outils et de bibliothèques qui impose une structure de code pour garantir la rapidité, la sécurité et la maintenabilité du développement." },
+{ id: "q_193.1", cat: "Data Platform", recto: "C'est quoi une API", verso: "Une API (application programming interface) est une interface logicielle qui permet de « connecter » un logiciel ou un service à un autre logiciel ou service afin d'échanger des données et des fonctionnalités.." },
+{ id: "q_194.1", cat: "Data Platform", recto: "Qu'est-ce qu'un Semantic Layer ? ", verso: "Une couche qui définit les métriques métier (ex: Chiffre d'Affaires) de manière centrale pour qu'elles soient identiques dans tous les outils de BI. Il garantit une 'Source Unique de Vérité'" },
+{ id: "q_195.1", cat: "Data Platform", recto: "À quoi sert un outil comme Airbyte dans une architecture de données ?", verso: "À extraire les données de sources variées (APIs, bases de données) et à les charger dans un entrepôt (Data Warehouse). C'est l'étape EL (Extract & Load)." },
+{ id: "q_196.1", cat: "Data Platform", recto: "Comment requêter une table partitionnée par date ?", verso: "Toujours inclure un filtre WHERE sur la colonne de partition (ex: WHERE date_commande > '2024-01-01') pour éviter de scanner toute la table. Pratique pour accélérer les requêtes et réduire les coûts de lecture dans les grandes tables" },
+{ id: "q_197.1", cat: "Data Platform", recto: "Que fait le SQL INSERT INTO table VALUES ('A', 'B') ?", verso: "Elle ajoute une nouvelle ligne de données dans la table spécifiée." },
+{ id: "q_198.1", cat: "Data Platform", recto: "Que fait le SQL DROP TABLE nom_table ?", verso: "Elle supprime définitivement la table ainsi que toutes les données qu'elle contient." },
+    
+        // Business -    
+            
+{ id: "q_111.1", cat: "Business", recto: "Qu'est-ce qu'une analyse de Cohorte ?", verso: "L'étude d'un groupe d'utilisateurs ayant un point commun (ex: date d'inscription) au fil du temps." },
+{ id: "q_112.1", cat: "Business", recto: "Quelle est la différence entre une tendance et une saisonnalité ?", verso: "La tendance est l'évolution globale à long terme (hausse ou baisse), tandis que la saisonnalité est une fluctuation cyclique 'prévisible' à court ou moyen terme (saison, vacances, weekend...)" },
+{ id: "q_113.1", cat: "Business", recto: "Différence entre corrélation et causalité ?", verso: "Corrélation : Deux chiffres bougent ensemble. Causalité : L'un provoque l'autre. Ne jamais confondre !" },
+{ id: "q_114.1", cat: "Business", recto: "Qu'est-ce que l'A/B Testing ?", verso: "Une expérience où deux variantes (d'une interface / produit) sont testées pour déterminer laquelle produit le meilleur résultat." },
+{ id: "q_115.1", cat: "Business", recto: "Qu'est-ce que le 'Conversion Rate' ?", verso: "Nombre de conversions / Nombre total de visiteurs * 100. On peut le retrouver à plusieurs étapes d'un funnel." },
+{ id: "q_116.1", cat: "Business", recto: "Marketing : Quelle est la différence entre Clic et Impression ?", verso: "Impression : L'annonce est affichée. Clic : L'utilisateur interagit. L'un mesure la vue, l'autre l'engagement." },
+{ id: "q_117.1", cat: "Business", recto: "Marketing : Qu'est-ce que le CTR (Click-Through Rate) ?", verso: "Formule : (Clics / Impressions) x 100. Ce taux mesure l'efficacité et la pertinence d'une annonce." },
+{ id: "q_118.1", cat: "Business", recto: "Ventes : Différence entre Prospect et Client ?", verso: "Prospect : Acheteur potentiel identifié. Client : Prospect ayant effectué une conversion (achat/sales) concrète." },
+{ id: "q_119.1", cat: "Business", recto: "Logistique : 'Ready to ship' vs 'Ready to deliver' ?", verso: "Ready to ship : Prêt à quitter l'entrepôt. Ready to deliver : Prêt pour la remise finale (dernier kilomètre)." },
+{ id: "q_120.1", cat: "Business", recto: "Analyse Métier : Quelle sont les premières étapes face à un problème ?", verso: "1. Ne pas coder en SQL immédiatement. 2.Cadrer, poser des questions et comprendre le contexte 3.Démontrer un raisonnement structuré via un framework d'investigation." },
+{ id: "q_121.1", cat: "Business", recto: "Framework de pensé : Cite 5 axes d'approche structurée ?", verso: "1. Processus (Funnel/Etapes/Chaîne de valeur). 2. Acteurs (Interne/Externe+Liste Métiers). 3. Perspective (A la place du client). 4 Décomposer la métrique. 5. Qualifier ou Affiner (Quoi / Qui / Ou / Quand )" },
+{ id: "q_122.1", cat: "Business", recto: "Etude de cas : Quelles sont les 4 questions structurantes ?", verso: "1. Tu veux savoir quoi ? 2. Pourquoi ? 3. Et alors ? (conséquence). 4. Comment mesurer ?" },
+{ id: "q_123.1", cat: "Business", recto: "Qualifier : En quoi consiste la méthode 'Quoi, Qui, Où, Quand' ?", verso: "Permet de préciser la question, d'affiner le périmètre (scope) et de qualifier le problème avant l'investigation." },
+{ id: "q_124.1", cat: "Business", recto: "Problème sur les données (ex : écarts) : Quels sont les 2 premières étapes du process ?", verso: "1. Communication avec les stakeholders (verifier la definition métier). 2. Technique Data (vérifier le pipeline : ingestion, nettoyage, modélisation)." },
+{ id: "q_125.1", cat: "Business", recto: "Problème business (ex : retards, abandons) : Comment procéder en 4 étapes ?", verso: "1. Communiquer (pourquoi est-ce important, comment ça marche, ...?) 2. Quantifier le problème et évaluer l'impact 3. Préciser, affiner, qualifier (quoi, qui, ou, quand) 4. Investiguer (framework de pensée)" },
+{ id: "q_126.1", cat: "Business", recto: "Question Business : Pourquoi échanger avec l'équipe/stakeholders avant le SQL ?", verso: "Pour comprendre le processus actuel, l'importance du problème (affiner, qualifier, combien ça nous coûte?) et recueillir les hypothèses du terrain." },
+{ id: "q_127.1", cat: "Business", recto: "Quantifier : Comment quantifier un problème ?", verso: "En calculant l'ampleur en volume (NB), en pourcentage (%), en délais ou en coût financier direct (combien ça nous coûte?)." },
+{ id: "q_128.1", cat: "Business", recto: "En entretien - Questions Ouvertes : le KPI baisse pourquoi ? Quels peuvent être les raisons ?  Quelle est la stratégie pour les résoudre ?", verso: "1. Contexte 'de la boite' et de la demande 2. Préciser la question, Quantifier le pb 3.Découper la question floue en sous-questions précises via des hypothèses mesurables 4. Deriver des KPIs (3 ou 4 pertinents et variés)." },
+{ id: "q_129.1", cat: "Business", recto: "Contexte : Pourquoi analyser la monétisation ?", verso: "Comprendre comment l'entreprise génère du revenu permet de determiner l'importance business de l'analyse." },
+{ id: "q_130.1", cat: "Business", recto: "Hypothèses : Cite 5 méthodes pour en générer ?", verso: "1. Décomposer la métrique. 2. Approche Interne/Externe + Liste metiers. 3. A la place du Client. 4. Analyse du Funnel (étapes). 5. Qualifier ou Affiner (Quoi / Qui / Ou / Quand )" },
+{ id: "q_131.1", cat: "Business", recto: "KPIs : Quel est leur rôle par rapport aux hypothèses business ?", verso: "Ils servent à confirmer ou infirmer scientifiquement les hypothèses générées lors de la phase de réflexion." },
+{ id: "q_132.1", cat: "Business", recto: "KPI en baisse : Cite 4 facteurs Internes typiques ?", verso: "Bugs techniques, problèmes de tracking, fin de campagne marketing, modifications de pricing ou autres changement de process internes" },
+{ id: "q_133.1", cat: "Business", recto: "KPI en baisse : Cite 3 facteurs Externes typiques ?", verso: "Saisonnalité, événement majeur, actions de la concurrence ou changements macro-économiques." },
+{ id: "q_134.1", cat: "Business", recto: "Investigation : Pourquoi utiliser l'approche Funnel/Etapes ?", verso: "Pour identifier à quelle étape précise de la chaîne de valeur se situe le goulot d'étranglement." },
+{ id: "q_135.1", cat: "Business", recto: "Etude de cas : Pourquoi se demander 'Et alors ?' ?", verso: "Pour forcer l'analyse vers la conséquence business réelle et éviter de rester sur un simple constat technique => faire des recommandations" },
+{ id: "q_136.1", cat: "Business", recto: "En entretien - Question Business : Que faire si des tables/colonnes brutes sont fournies ?", verso: "1. Ne pas coder. 2. Organiser et catégoriser les colonnes pour démontrer sa compréhension de la structure des données." },
+{ id: "q_137.1", cat: "Business", recto: "Cite 3 KPI d'inventaire (Inventory)", verso: "Opening (stock au début), Closing (stock restant à la fin). Le Turnover Rate mesure combien de fois le stock a été renouvelé sur une période." },
+{ id: "q_138.1", cat: "Business", recto: "KPI", verso: "Key Performance Indicator. Un indicateur clé de performance qui sert de 'tableau de bord' sur le long terme pour vérifier si l'entreprise avance vers ses objectifs stratégiques." },
+{ id: "q_139.1", cat: "Business", recto: "OKR vs KPI ?", verso: "Les KPI sont des indicateurs de suivi continus et stables. Les OKR sont des objectifs de rupture, limités dans le temps (souvent au trimestre)." },
+{ id: "q_140.1", cat: "Business", recto: "Quel est l'ordre logique des services dans un parcours client standard (le tunnel) ?", verso: "Marketing (prospect) -> Sales (client) -> Produit (livraison) -> Care (rétention) -> Ops/Finance (fluidité globale)." },
+{ id: "q_141.1", cat: "Business", recto: "Les 3 Piliers d'un business modèle", verso: "L'acquisition génère le volume de revenus, le produit maximise la valeur par client, et la rétention sécurise la récurrence (LTV)." },
+{ id: "q_142.1", cat: "Business", recto: "C'est quoi une Impression ?", verso: "Le nombre de fois qu'un contenu ou une pub est affiché sur un écran." },
+{ id: "q_143.1", cat: "Business", recto: "C'est quoi un Prospect ?", verso: "Un contact ou une entreprise identifiée comme un client potentiel." },
+{ id: "q_144.1", cat: "Business", recto: "C'est quoi le Panier Moyen ?", verso: "Le montant moyen dépensé par les clients lors d'une commande." },
+{ id: "q_145.1", cat: "Business", recto: "C'est quoi le KYC (Know Your Customer) ?", verso: "Le processus légal de vérification de l'identité d'un client (ex: pour une banque)." },
+{ id: "q_146.1", cat: "Business", recto: "C'est quoi le NPS (Net Promoter Score) ?", verso: "Un score mesurant la satisfaction client via une seule question : 'Recommanderiez-vous ce service ?'" },
+{ id: "q_147.1", cat: "Business", recto: "Rétention vs Churn ?", verso: "La rétention est le taux de clients que l'on garde, le churn est le taux de clients que l'on perd." },
+{ id: "q_148.1", cat: "Business", recto: "C'est quoi la LTV (Life Time Value) ?", verso: "Le profit total généré par un client pendant toute la durée de sa relation avec la boîte." },
+{ id: "q_149.1", cat: "Business", recto: "C'est quoi le CPA / CAC ?", verso: "Le coût moyen dépensé en marketing pour acquérir un nouveau client." },
+{ id: "q_150.1", cat: "Business", recto: "C'est quoi le SEO ?", verso: "L'optimisation d'un site pour apparaître gratuitement dans les premiers résultats Google." },
     ];
     const allCards = rawCards;
 
+    // --- UTILS ---
     const getBrowserData = () => {
+        const data = { browser: "Inconnu", device: "Ordinateur" };
         const ua = navigator.userAgent;
-        let browser = "Inconnu";
-        if (ua.includes("Firefox")) browser = "Firefox";
-        else if (ua.includes("Chrome")) browser = "Chrome";
-        else if (ua.includes("Safari")) browser = "Safari";
-        
-        let device = /Mobi|Android|iPhone/i.test(ua) ? "Mobile" : "Ordinateur";
-        return { browser, device };
+        if (navigator.userAgentData) {
+            const brands = navigator.userAgentData.brands;
+            const mainBrand = brands.find(b => !b.brand.includes("Not") && b.brand !== "Chromium");
+            data.browser = mainBrand ? mainBrand.brand : brands[0].brand;
+        } else {
+            if (ua.includes("Firefox")) data.browser = "Firefox";
+            else if (ua.includes("Safari") && !ua.includes("Chrome")) data.browser = "Safari";
+            else data.browser = "Navigateur Classique";
+        }
+        const isTablet = /(ipad|tablet|playbook|silk)|(android(?!.*mobi))/i.test(ua);
+        const isMobile = /mobi|iphone|blackberry|iemobile/i.test(ua);
+        if (isTablet) data.device = "Autres";
+        else if (isMobile) data.device = "Mobile";
+        else {
+            if (navigator.userAgentData && navigator.userAgentData.mobile) data.device = "Mobile";
+            else data.device = "Ordinateur";
+        }
+        return data;
     };
 
+    // --- LOGIC ---
     window.startSession = async () => {
         const input = document.getElementById('pseudo-input').value;
         if (input.trim().length < 2) return alert("Veuillez entrer un pseudo valide.");
         userPseudo = input.trim();
-        
         allCards.forEach(card => userWeights[card.id] = 3); 
 
         try {
@@ -83,32 +264,30 @@
                     userWeights[data.questionId] = (data.resultat === "réussi") ? 1 : 3.1;
                 }
             });
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            initChart();
+            filterCards('Tous'); 
         } catch (error) {
-            console.error("Erreur Firebase:", error);
+            console.error(error);
+            initChart();
+            filterCards('Tous');
         }
-        
-        document.getElementById('welcome-screen').classList.add('hidden');
-        document.getElementById('app-content').classList.remove('hidden');
-        initChart();
-        filterCards('Tous'); 
     };
 
     window.filterCards = (category) => {
         currentCategory = category;
         currentIndex = 0;
         document.getElementById('victory-note').classList.add('hidden');
-        
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            const btnCat = btn.getAttribute('data-cat');
-            const isActive = (btnCat === category);
+            const isActive = btn.getAttribute('onclick').includes(`'${category}'`);
             btn.className = `filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all ${isActive ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-slate-400 border border-slate-100 hover:bg-slate-50'}`;
         });
-
         let baseCards = category === 'Tous' ? [...allCards] : allCards.filter(c => c.cat === category);
         let weightedPool = [];
         baseCards.forEach(card => {
             const w = userWeights[card.id] || 3;
-            const loop = Math.ceil(w); 
+            const loop = Math.floor(w); 
             for (let i = 0; i < loop; i++) weightedPool.push(card);
         });
         questions = shuffleArray([...new Set(weightedPool)]);
@@ -117,47 +296,84 @@
 
     window.markAs = async (known) => {
         if (questions.length === 0) return;
+        
+        const endTime = Date.now();
+        const reflectionTimeSeconds = cardStartTime ? (endTime - cardStartTime) / 1000 : null;
         const card = questions[currentIndex];
+        const deviceInfo = getBrowserData();
         const isFlipped = document.getElementById('flashcard').classList.contains('card-flipped');
         
+        const weight = userWeights[card.id];
+        let libelleAvant = (weight === 1) ? "maîtrisé" : (weight === 3.1 ? "à revoir" : "nouveau");
+
         userWeights[card.id] = known ? 1 : 3.1;
 
         try {
             await addDoc(collection(db, "analytics_promo"), {
                 pseudo: userPseudo,
                 questionId: card.id,
+                categorie: card.cat,
                 resultat: known ? "réussi" : "à revoir",
+                maitriseInstinctive: (known && !isFlipped),
+                etatAuClic: libelleAvant,
+                tempsReflexion: reflectionTimeSeconds, // NOUVEAU
+                browser: deviceInfo.browser,           // NOUVEAU
+                device: deviceInfo.device,             // NOUVEAU
                 date: serverTimestamp()
             });
         } catch (e) { console.error(e); }
 
+        updateUI();
+        // Logique de victoire...
+        const allMastered = allCards.filter(c => userWeights[c.id] === 1).length === allCards.length;
         const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
-        const categoryMastered = scope.every(c => userWeights[c.id] === 1);
-        
-        if (categoryMastered) {
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            document.getElementById('victory-note').classList.remove('hidden');
+        const categoryMastered = scope.filter(c => userWeights[c.id] === 1).length === scope.length;
+        const victoryNote = document.getElementById('victory-note');
+        if (allMastered) {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            victoryNote.innerText = "🏆 Maîtrise totale !";
+            victoryNote.classList.remove('hidden');
+        } else if (categoryMastered) {
+            confetti({ particleCount: 80, spread: 50, origin: { y: 0.7 } });
+            victoryNote.innerText = "⭐ Catégorie maîtrisée !";
+            victoryNote.classList.remove('hidden');
         }
-        
-        setTimeout(nextCard, 300);
+        setTimeout(nextCard, 400);
     };
 
-    window.nextCard = () => { currentIndex = (currentIndex + 1) % questions.length; updateUI(); };
-    window.prevCard = () => { currentIndex = (currentIndex - 1 + questions.length) % questions.length; updateUI(); };
-    window.flipCard = () => document.getElementById('flashcard').classList.toggle('card-flipped');
-    window.skipCard = () => nextCard();
+    window.skipCard = () => {
+        // Point 1 : Suppression de l'addDoc ici. On passe juste à la suivante.
+        nextCard();
+    };
 
-    function updateUI() {
+function updateUI() {
         if (questions.length === 0) return;
         const card = questions[currentIndex];
+        cardStartTime = Date.now(); 
+
         document.getElementById('card-category').innerText = card.cat;
         document.getElementById('card-recto').innerText = card.recto;
-        document.getElementById('card-verso').innerText = card.verso;
         document.getElementById('card-counter').innerText = `${currentIndex + 1} / ${questions.length}`;
         document.getElementById('flashcard').classList.remove('card-flipped');
 
-        const weight = userWeights[card.id];
+        // --- DEBUT DU BLOC MODIFIÉ POUR LE VERSO ---
+        const versoElem = document.getElementById('card-verso');
+        const textVerso = card.verso;
+        versoElem.innerText = textVerso;
+
+        // Logique d'ajustement automatique de la taille (Auto-Fit)
+        if (textVerso.length > 250) {
+            versoElem.className = "text-center text-sm md:text-base font-medium px-8 py-2 leading-tight";
+        } else if (textVerso.length > 120) {
+            versoElem.className = "text-center text-base md:text-lg font-medium px-8 py-4 leading-snug";
+        } else {
+            versoElem.className = "text-center text-lg md:text-2xl font-bold px-8 py-4";
+        }
+        // --- FIN DU BLOC MODIFIÉ ---
+
         const badge = document.getElementById('card-status');
+        const weight = userWeights[card.id];
+        // ... (le reste de ton code pour les badges et le graphique reste identique)
         if (weight === 1) {
             badge.innerText = "● MAÎTRISÉ";
             badge.className = "text-[10px] font-black text-teal-500 tracking-[0.2em] mb-4 block";
@@ -165,11 +381,24 @@
             badge.innerText = "● À REVOIR";
             badge.className = "text-[10px] font-black text-pink-500 tracking-[0.2em] mb-4 block";
         } else {
-            badge.innerText = "● NOUVEAU";
+            badge.innerText = "● NOUVELLE QUESTION";
             badge.className = "text-[10px] font-black text-indigo-400 tracking-[0.2em] mb-4 block";
+        }
+        const scope = currentCategory === 'Tous' ? allCards : allCards.filter(c => c.cat === currentCategory);
+        const masteredCount = scope.filter(c => userWeights[c.id] === 1).length;
+        const reviewCount = scope.filter(c => userWeights[c.id] === 3.1).length;
+        const newCount = scope.length - (masteredCount + reviewCount);
+        document.getElementById('progress-text').innerText = `${masteredCount} / ${scope.length}`;
+        if (progressChart) {
+            progressChart.data.datasets[0].data = [masteredCount, reviewCount, newCount];
+            progressChart.update();
         }
     }
 
+    // Fonctions shuffle, nextCard, initChart, Keydown (inchangées)...
+    window.nextCard = () => { currentIndex = (currentIndex + 1) % questions.length; updateUI(); };
+    window.prevCard = () => { currentIndex = (currentIndex - 1 + questions.length) % questions.length; updateUI(); };
+    window.flipCard = () => document.getElementById('flashcard').classList.toggle('card-flipped');
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -177,90 +406,126 @@
         }
         return array;
     }
-
     function initChart() {
         const ctx = document.getElementById('progressChart').getContext('2d');
         if (progressChart) progressChart.destroy();
         progressChart = new Chart(ctx, {
             type: 'doughnut',
-            data: { datasets: [{ data: [0, 0, 100], backgroundColor: ['#14b8a6', '#ec4899', '#f1f5f9'], borderWidth: 0 }] },
-            options: { cutout: '80%', plugins: { legend: { display: false } } }
+            data: {
+                labels: ["Maîtrisé", "À revoir", "Nouveau"],
+                datasets: [{
+                    data: [0, 0, 100],
+                    backgroundColor: ['#14b8a6', '#ec4899', '#f1f5f9'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } }
         });
     }
-
     document.addEventListener('keydown', (e) => {
-        if(document.getElementById('welcome-screen').classList.contains('hidden')) {
-            if(e.code === 'Space') { e.preventDefault(); flipCard(); }
-            if(e.code === 'Enter') markAs(true);
-            if(e.code === 'Escape') markAs(false);
-        }
+        if(!document.getElementById('welcome-screen').classList.contains('hidden')) return;
+        if(e.code === 'Space') { e.preventDefault(); flipCard(); }
+        if(e.code === 'ArrowRight' || e.code === 'Enter') markAs(true);
+        if(e.code === 'ArrowLeft' || e.code === 'Delete' || e.code === 'Backspace') markAs(false);
+        if(e.code === 'KeyS') skipCard();
     });
 </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
         .perspective { perspective: 1500px; }
-        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
         .card-flipped { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 2rem; border-radius: 2rem; }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 2.5rem; border-radius: 2.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05); }
         .card-back { transform: rotateY(180deg); }
-        .kbd-key { background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; border: 1px solid rgba(0,0,0,0.1); }
+        .kbd-key { background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(0,0,0,0.1); margin-left: 4px; }
     </style>
 </head>
 
 <body class="bg-slate-50 text-slate-900 min-h-screen flex items-center justify-center">
 
     <div id="welcome-screen" class="bg-white p-10 rounded-[3rem] shadow-xl text-center max-w-md w-full mx-4 border border-slate-100">
+        <div class="mb-6 text-5xl animate-bounce">📊</div>
         <h1 class="text-3xl font-black text-indigo-600 mb-2">Data Flashcards</h1>
-        <p class="text-slate-400 mb-8">Entrez votre pseudo pour commencer.</p>
-        <input id="pseudo-input" type="text" placeholder="Pseudo" class="w-full p-4 border-2 border-slate-100 rounded-2xl mb-6 text-center text-lg font-bold outline-none focus:border-indigo-500">
-        <button onclick="startSession()" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold text-xl hover:bg-indigo-700 transition-all">C'est parti !</button>
+        <p class="text-slate-400 mb-8 font-medium">Teste tes compétences de DA avec des cartes mémoires.</p>
+        <input id="pseudo-input" type="text" placeholder="Ton Pseudo" 
+            class="w-full p-4 border-2 border-slate-100 rounded-2xl mb-6 text-center text-lg font-bold outline-none focus:border-indigo-500 transition-all">
+        <button onclick="startSession()" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold text-xl hover:bg-indigo-700 shadow-lg transition-all active:scale-95">
+            C'est parti !
+        </button>
     </div>
 
-    <div id="app-content" class="hidden w-full max-w-5xl mx-auto px-4">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex-1">
-                <h1 class="text-2xl font-black text-indigo-600">Dashboard de Révision</h1>
-                <div class="flex flex-wrap gap-2 mt-4">
-                    <button onclick="filterCards('Tous')" data-cat="Tous" class="filter-btn px-4 py-2 rounded-full text-xs font-bold">Tous</button>
-                    <button onclick="filterCards('SQL')" data-cat="SQL" class="filter-btn px-4 py-2 rounded-full text-xs font-bold">SQL</button>
-                    <button onclick="filterCards('dbt')" data-cat="dbt" class="filter-btn px-4 py-2 rounded-full text-xs font-bold">dbt</button>
+    <div id="app-content" class="hidden w-full max-w-6xl mx-auto px-4 py-8">
+        <header class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div class="lg:col-span-2 bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between">
+                <div>
+                    <h1 class="text-4xl font-extrabold tracking-tight text-indigo-600 mb-2">Data Flashcards</h1>
+                    <p class="text-slate-500 font-medium text-lg">Choisi ta catégorie et teste ta mémoire.</p>
+                </div>
+                <div class="mt-8 flex flex-wrap gap-2">
+                    <button onclick="filterCards('Tous')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Tous</button>
+                    <button onclick="filterCards('SQL')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">SQL</button>
+                    <button onclick="filterCards('Analytics Method')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Analytics Method</button>
+                    <button onclick="filterCards('dbt')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">dbt</button>
+                    <button onclick="filterCards('Data Platform')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Data Platform</button>
+                    <button onclick="filterCards('Business')" class="filter-btn px-5 py-2 rounded-full text-xs font-bold transition-all">Business</button>
                 </div>
             </div>
-            <div class="h-24 w-24 relative bg-white p-2 rounded-full shadow-sm">
-                <canvas id="progressChart"></canvas>
+
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+                <div class="relative h-32 w-32">
+                    <canvas id="progressChart"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="progress-text" class="text-xl font-black text-slate-800">0 / 0</span>
+                    </div>
+                </div>
+                <p class="mt-4 text-slate-400 text-[10px] uppercase font-bold tracking-widest text-center">Taux de maîtrise</p>
             </div>
         </header>
 
         <main class="flex flex-col items-center space-y-8">
-            <div id="victory-note" class="hidden bg-teal-100 text-teal-700 px-6 py-2 rounded-full font-bold animate-bounce">🏆 Section maîtrisée !</div>
-            
-            <div class="perspective w-full max-w-2xl h-[350px]">
+            <div id="victory-note" class="hidden bg-teal-100 text-teal-700 px-6 py-3 rounded-full font-bold text-sm animate-pulse">
+                🏆 Message par défaut
+            </div>
+
+            <div class="perspective w-full max-w-3xl h-[400px]">
                 <div id="flashcard" class="card-inner" onclick="flipCard()">
-                    <div class="card-front bg-white border border-slate-100 shadow-sm">
-                        <div class="text-center">
+                    <div class="card-front bg-white border border-slate-100">
+                        <div class="text-center w-full">
                             <span id="card-status"></span>
-                            <span id="card-category" class="text-[10px] font-black text-indigo-300 uppercase tracking-widest block mb-4"></span>
-                            <h2 id="card-recto" class="text-xl md:text-2xl font-extrabold text-slate-800"></h2>
+                            <span id="card-category" class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-8 block">CATÉGORIE</span>
+                            <h2 id="card-recto" class="text-2xl md:text-3xl font-extrabold text-slate-800 px-4 md:px-12 leading-tight"></h2>
+                            <p class="mt-12 text-slate-400 text-[10px] uppercase font-bold tracking-[0.2em]">Cliquer pour voir la réponse <span class="kbd-key uppercase">Espace</span></p>
                         </div>
                     </div>
-                    <div class="card-back bg-indigo-600 text-white shadow-xl">
-                        <div id="card-verso" class="text-center text-lg font-medium px-6"></div>
+                    <div class="card-back bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center overflow-hidden">
+                        <div id="card-verso" class="whitespace-pre-wrap px-8"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-4 w-full max-w-2xl">
-                <button onclick="markAs(false)" class="bg-white p-6 rounded-3xl font-bold text-slate-400 hover:text-pink-500 border border-slate-100 transition-all">✖ À revoir</button>
-                <button onclick="skipCard()" class="bg-slate-100 p-6 rounded-3xl font-bold text-slate-400 hover:text-slate-600 transition-all">⏭ Skip</button>
-                <button onclick="markAs(true)" class="bg-teal-500 p-6 rounded-3xl font-bold text-white shadow-lg hover:bg-teal-600 transition-all">✔ Maîtrisé</button>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
+                <button onclick="markAs(false)" class="bg-white border-2 border-slate-100 text-slate-400 py-6 rounded-[2rem] font-bold hover:text-pink-600 transition-all hover:border-pink-200 flex flex-col items-center justify-center gap-2">
+                    <span>✖ À revoir</span>
+                    <span class="text-[10px] opacity-50 font-black tracking-widest uppercase">Touche <span class="kbd-key">Suppr</span></span>
+                </button>
+                
+                <button onclick="skipCard()" class="bg-slate-100 text-slate-400 py-6 rounded-[2rem] font-bold hover:bg-slate-200 hover:text-slate-600 transition-all flex flex-col items-center justify-center gap-2 border border-transparent">
+                    <span>⏭ Skip</span>
+                    <span class="text-[10px] opacity-50 font-black tracking-widest uppercase">Touche <span class="kbd-key">S</span></span>
+                </button>
+
+                <button onclick="markAs(true)" class="bg-teal-500 text-white py-6 rounded-[2rem] font-bold hover:bg-teal-600 shadow-lg shadow-teal-100 transition-all flex flex-col items-center justify-center gap-2">
+                    <span>✔ Maîtrisé</span>
+                    <span class="text-[10px] opacity-70 font-black tracking-widest uppercase">Touche <span class="kbd-key border-white/20 bg-white/10">Entrée</span></span>
+                </button>
             </div>
-            
-            <div class="flex justify-between w-full max-w-2xl text-slate-400 text-sm font-bold">
-                <button onclick="prevCard()">← Retour</button>
-                <span id="card-counter" class="bg-slate-100 px-4 py-1 rounded-full"></span>
-                <button onclick="nextCard()">Suivant →</button>
+
+            <div class="flex justify-between w-full max-w-3xl px-4 text-slate-400 font-bold text-sm">
+                <button onclick="prevCard()" class="hover:text-indigo-600 transition-colors">← Précédente</button>
+                <div id="card-counter" class="font-mono bg-slate-100 px-4 py-1 rounded-full text-indigo-600">0 / 0</div>
+                <button onclick="nextCard()" class="hover:text-indigo-600 transition-colors">Suivante →</button>
             </div>
         </main>
     </div>
