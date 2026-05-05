@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Flashcards</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    
+    <!-- Bibliothèques externes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- DÉBUT DU SNIPPET AMPLITUDE -->
+    <!-- 1. BLOC AMPLITUDE (Script classique) -->
     <script src="https://cdn.amplitude.com/script/eb9c77d7ebecbcb49cdea83cb8a478fe.js"></script>
     <script>
         window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));
@@ -27,26 +29,26 @@
             }
         });
     </script>
-    <!-- FIN DU SNIPPET AMPLITUDE -->
     
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-        getFirestore, collection, addDoc, serverTimestamp, 
-        query, where, getDocs 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import confetti from 'https://cdn.skypack.dev/canvas-confetti';
+    <!-- 2. BLOC FIREBASE & LOGIQUE (Script Module) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+            getFirestore, collection, addDoc, serverTimestamp, 
+            query, where, getDocs 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
-    // --- CONFIGURATION ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyC80dJTJ-tzpkH7FTeZgi9RksyVaiUGq9M",
-        authDomain: "dataflashcards.firebaseapp.com",
-        projectId: "dataflashcards",
-        storageBucket: "dataflashcards.firebasestorage.app",
-        messagingSenderId: "190231819778",
-        appId: "1:190231819778:web:64832f57614b20f6fd591b",
-        measurementId: "G-TG7RX5WLS0"
-    };
+        // --- CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyC80dJTJ-tzpkH7FTeZgi9RksyVaiUGq9M",
+            authDomain: "dataflashcards.firebaseapp.com",
+            projectId: "dataflashcards",
+            storageBucket: "dataflashcards.firebasestorage.app",
+            messagingSenderId: "190231819778",
+            appId: "1:190231819778:web:64832f57614b20f6fd591b",
+            measurementId: "G-TG7RX5WLS0"
+        };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
