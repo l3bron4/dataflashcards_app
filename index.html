@@ -9,26 +9,6 @@
     <!-- Bibliothèques externes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- 1. BLOC AMPLITUDE (Script classique) -->
-    <script src="https://cdn.amplitude.com/script/eb9c77d7ebecbcb49cdea83cb8a478fe.js"></script>
-    <script>
-        window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));
-        window.amplitude.init('eb9c77d7ebecbcb49cdea83cb8a478fe', {
-            "fetchRemoteConfig": true,
-            "autocapture": {
-                "attribution": true,
-                "fileDownloads": true,
-                "formInteractions": true,
-                "pageViews": true,
-                "sessions": true,
-                "elementInteractions": true,
-                "networkTracking": true,
-                "webVitals": true,
-                "frustrationInteractions": true
-            }
-        });
-    </script>
     
     <!-- 2. BLOC FIREBASE & LOGIQUE (Script Module) -->
     <script type="module">
